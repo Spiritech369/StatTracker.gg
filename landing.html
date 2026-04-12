@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoL Strategist - Tu Coach IA Personal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Exo 2', sans-serif;
+      background: #0a0e1a;
+      color: #c8d0e0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Hero Background */
+    .hero-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 100vh;
+      background: 
+        radial-gradient(ellipse at 20% 50%, rgba(200, 155, 60, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 50%, rgba(74, 158, 255, 0.06) 0%, transparent 50%),
+        #0a0e1a;
+      z-index: -1;
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, #c89b3c, #f0d785);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 22px; font-weight: 700; color: #0a0e1a;
+    }
+
+    .logo-text {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: #f0d785;
+      letter-spacing: 1px;
+    }
+
+    .nav-cta {
+      background: transparent;
+      border: 1px solid #c89b3c;
+      color: #c89b3c;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-cta:hover {
+      background: #c89b3c;
+      color: #0a0e1a;
+    }
+
+    /* Hero Section */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 40px 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .hero-content { max-width: 520px; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(200, 155, 60, 0.1);
+      border: 1px solid rgba(200, 155, 60, 0.3);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      color: #c89b3c;
+      margin-bottom: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-dot {
+      width: 6px; height: 6px;
+      background: #4aff7a;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 52px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, #c89b3c, #f0d785);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 18px;
+      line-height: 1.7;
+      color: #8a9ab8;
+      margin-bottom: 32px;
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #c89b3c, #f0d785);
+      border: none;
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #0a0e1a;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200, 155, 60, 0.3); }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid #2a3a5a;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #8a9ab8;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover { border-color: #4a9eff; color: #4a9eff; }
+
+    .social-proof {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: #5a6a8a;
+    }
+
+    .avatars {
+      display: flex;
+    }
+
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 2px solid #0a0e1a;
+      margin-left: -8px;
+      background: linear-gradient(135deg, #2a4a7a, #1a2a4a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: #8a9ab8;
+    }
+
+    .avatar:first-child { margin-left: 0; }
+
+    /* Demo Preview */
+    .hero-preview {
+      position: relative;
+    }
+
+    .demo-frame {
+      background: #111827;
+      border: 1px solid #1e2d45;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+    }
+
+    .demo-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .demo-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .demo-dot.r { background: #ff5f57; }
+    .demo-dot.y { background: #febc2e; }
+    .demo-dot.g { background: #28c840; }
+
+    .demo-compact {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .demo-team {
+      background: #0a0e1a;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .demo-team-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .demo-team.ally .demo-team-label { color: #4a9eff; }
+    .demo-team.enemy .demo-team-label { color: #ff4a4a; }
+
+    .demo-champs {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 11px;
+      color: #8a9ab8;
+    }
+
+    .demo-result {
+      background: linear-gradient(135deg, rgba(74, 255, 122, 0.1), rgba(74, 158, 255, 0.05));
+      border: 1px solid rgba(74, 255, 122, 0.2);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .demo-win {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px;
+      color: #4aff7a;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .demo-text {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #8a9ab8;
+    }
+
+    /* Features Grid */
+    .features {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 80px 40px;
+    }
+
+    .section-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #c89b3c;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 48px;
+      color: #fff;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: #111827;
+      border: 1px solid #1e2d45;
+      border-radius: 14px;
+      padding: 28px;
+      transition: all 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: #c89b3c;
+      transform: translateY(-4px);
+    }
+
+    .feature-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, rgba(200, 155, 60, 0.15), rgba(200, 155, 60, 0.05));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+      font-size: 22px;
+    }
+
+    .feature-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #f0d785;
+      margin-bottom: 10px;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #6a7a9a;
+    }
+
+    /* Pricing */
+    .pricing {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 80px 40px;
+      background: linear-gradient(180deg, transparent, rgba(200, 155, 60, 0.03));
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-top: 48px;
+    }
+
+    .price-card {
+      background: #111827;
+      border: 1px solid #1e2d45;
+      border-radius: 14px;
+      padding: 28px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .price-card:hover {
+      border-color: #3a4a6a;
+    }
+
+    .price-card.featured {
+      border-color: #c89b3c;
+      background: linear-gradient(180deg, rgba(200, 155, 60, 0.08), #111827);
+      position: relative;
+    }
+
+    .price-card.featured::before {
+      content: 'MÁS POPULAR';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #c89b3c, #f0d785);
+      color: #0a0e1a;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 4px 14px;
+      border-radius: 20px;
+    }
+
+    .price-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #8a9ab8;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .price-amount {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .price-amount span {
+      font-size: 16px;
+      color: #5a6a8a;
+    }
+
+    .price-period {
+      font-size: 12px;
+      color: #5a6a8a;
+      margin-bottom: 20px;
+    }
+
+    .price-features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 24px;
+    }
+
+    .price-features li {
+      font-size: 13px;
+      color: #8a9ab8;
+      padding: 6px 0;
+      border-bottom: 1px solid #1e2d45;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .price-features li::before {
+      content: '✓';
+      color: #4aff7a;
+      font-weight: bold;
+    }
+
+    .price-features li.disabled {
+      color: #4a5a7a;
+      text-decoration: line-through;
+    }
+
+    .price-features li.disabled::before {
+      content: '✗';
+      color: #4a5a7a;
+    }
+
+    .btn-price {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-price.primary {
+      background: linear-gradient(135deg, #c89b3c, #f0d785);
+      border: none;
+      color: #0a0e1a;
+    }
+
+    .btn-price.outline {
+      background: transparent;
+      border: 1px solid #2a3a5a;
+      color: #8a9ab8;
+    }
+
+    .btn-price:hover { transform: scale(1.02); }
+
+    /* CTA Section */
+    .cta-section {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 80px 40px;
+      text-align: center;
+    }
+
+    .cta-box {
+      background: linear-gradient(135deg, rgba(200, 155, 60, 0.1), rgba(74, 158, 255, 0.05));
+      border: 1px solid rgba(200, 155, 60, 0.2);
+      border-radius: 20px;
+      padding: 48px;
+    }
+
+    .cta-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+
+    .cta-desc {
+      font-size: 16px;
+      color: #8a9ab8;
+      margin-bottom: 32px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .email-form {
+      display: flex;
+      gap: 12px;
+      max-width: 450px;
+      margin: 0 auto;
+    }
+
+    .email-input {
+      flex: 1;
+      background: #0a0e1a;
+      border: 1px solid #2a3a5a;
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-size: 14px;
+      color: #c8d0e0;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .email-input:focus { border-color: #c89b3c; }
+    .email-input::placeholder { color: #4a5a7a; }
+
+    /* Footer */
+    footer {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px;
+      border-top: 1px solid #1e2d45;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #4a5a7a;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      color: #5a6a8a;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: #c89b3c; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; padding: 40px 20px; }
+      .hero-content { max-width: 100%; text-align: center; }
+      .cta-group { justify-content: center; }
+      .social-proof { justify-content: center; }
+      .features-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+      .email-form { flex-direction: column; }
+      h1 { font-size: 38px; }
+    }
+
+    @media (max-width: 600px) {
+      .pricing-grid { grid-template-columns: 1fr; }
+      .navbar { padding: 16px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hero-bg"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo-section">
+      <div class="logo-icon">S</div>
+      <div class="logo-text">LoL Strategist</div>
+    </div>
+    <button class="nav-cta" onclick="scrollToTry()">PROBAR GRATIS</button>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="badge">
+        <div class="badge-dot"></div>
+        Análisis IA en 3 segundos
+      </div>
+      <h1>Deja de <span>adivinar</span> tu draft</h1>
+      <p class="hero-subtitle">
+        Cada análisis te dice exactamente qué hacer: cuándo farmear, cuándo pelear, 
+        cómo escalar y qué campeón enemigo debes temer. Sin guesswork.
+      </p>
+      <div class="cta-group">
+        <button class="btn-primary" onclick="scrollToTry()">
+          ANALIZAR MI COMP
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button class="btn-secondary">Ver demo</button>
+      </div>
+      <div class="social-proof">
+        <div class="avatars">
+          <div class="avatar">J</div>
+          <div class="avatar">K</div>
+          <div class="avatar">M</div>
+          <div class="avatar">R</div>
+          <div class="avatar">+2K</div>
+        </div>
+        <span>Más de 2,000 análisis generados esta semana</span>
+      </div>
+    </div>
+
+    <div class="hero-preview">
+      <div class="demo-frame">
+        <div class="demo-header">
+          <div class="demo-dot r"></div>
+          <div class="demo-dot y"></div>
+          <div class="demo-dot g"></div>
+        </div>
+        <div class="demo-compact">
+          <div class="demo-team ally">
+            <div class="demo-team-label">Tu equipo</div>
+            <div class="demo-champs">
+              <span>Top: Darius</span>
+              <span>Jungla: Lee Sin</span>
+              <span>Mid: Ahri</span>
+              <span>ADC: Jinx</span>
+              <span>Support: Thresh</span>
+            </div>
+          </div>
+          <div class="demo-team enemy">
+            <div class="demo-team-label">Enemigos</div>
+            <div class="demo-champs">
+              <span>Top: Malphite</span>
+              <span>Jungla: Amumu</span>
+              <span>Mid: Ziggs</span>
+              <span>ADC: Caitlyn</span>
+              <span>Support: Nami</span>
+            </div>
+          </div>
+        </div>
+        <div class="demo-result">
+          <div class="demo-win">✓ WIN CONDITION: DOMINA EARLY</div>
+          <div class="demo-text">
+            <strong>Early:</strong> Abusa de Malphite con Darius. Invade Amumu con Lee Sin.<br>
+            <strong>Mid:</strong> Presiona antes de que Ziggs scale.<br>
+            <strong>Amenaza:</strong> Caitlyn + Nami poke lane.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features">
+    <div class="section-label">Características</div>
+    <h2 class="section-title">Todo lo que necesitas para ganar</h2>
+    
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Análisis en 3 Segundos</div>
+        <div class="feature-desc">
+          Pega los nombres de los campeones y obtén estrategia detallada al instante. 
+          Sin esperar, sin cargar.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-title">Personalizado a Tu Estilo</div>
+        <div class="feature-desc">
+          ¿Agresivo? ¿Escalar? ¿Split push? El análisis se adapta a cómo 
+          prefieres jugar, no al revés.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Fases del Juego</div>
+        <div class="feature-desc">
+          Early, Mid, Late. Te decimos exactamente qué hacer en cada 
+          momento para maximizar tus probabilidades de victoria.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">⚠️</div>
+        <div class="feature-title">Detecta Amenazas</div>
+        <div class="feature-desc">
+          Identifica al campeón enemigo más peligroso y te dice 
+          cómo neutralizarlo o evitarlo.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📤</div>
+        <div class="feature-title">Exporta para Compartir</div>
+        <div class="feature-desc">
+          Un clic para copiar el análisis y compartirlo. 
+          Genera contenido viral orgánico sin esfuerzo.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔄</div>
+        <div class="feature-title">Match ID Pro</div>
+        <div class="feature-desc">
+          Con tu Match ID, analizamos tu partida real y te mostramos 
+          las 5 decisiones que te costaron la victoria.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="pricing">
+    <div class="section-label">Planes</div>
+    <h2 class="section-title">Elige tu nivel de coaching</h2>
+
+    <div class="pricing-grid">
+      <!-- Free -->
+      <div class="price-card">
+        <div class="price-name">Free</div>
+        <div class="price-amount">$0</div>
+        <div class="price-period">Para siempre</div>
+        <ul class="price-features">
+          <li>3 análisis por día</li>
+          <li>Recomendaciones básicas</li>
+          <li>Exportar para compartir</li>
+          <li class="disabled">Análisis por Match ID</li>
+          <li class="disabled">Personalización por estilo</li>
+          <li class="disabled">Historial de partidas</li>
+        </ul>
+        <button class="btn-price outline">Empezar Gratis</button>
+      </div>
+
+      <!-- Pro -->
+      <div class="price-card featured">
+        <div class="price-name">Pro</div>
+        <div class="price-amount">$4.99<span>/mes</span></div>
+        <div class="price-period">O $39.99/año (-33%)</div>
+        <ul class="price-features">
+          <li>Análisis ilimitados</li>
+          <li>Personalización por estilo</li>
+          <li>Exportar tarjetas visuales</li>
+          <li class="disabled">Análisis por Match ID</li>
+          <li class="disabled">Historial de partidas</li>
+        </ul>
+        <button class="btn-price primary">Unirme a Pro</button>
+      </div>
+
+      <!-- Coach -->
+      <div class="price-card">
+        <div class="price-name">Coach</div>
+        <div class="price-amount">$12.99<span>/mes</span></div>
+        <div class="price-period">O $99.99/año (-36%)</div>
+        <ul class="price-features">
+          <li>Todo lo de Pro</li>
+          <li>Análisis post-partida con Match ID</li>
+          <li>Historial completo</li>
+          <li>Decisiones críticas detectadas</li>
+          <li class="disabled">Overlay OBS</li>
+        </ul>
+        <button class="btn-price outline">Ser Coach</button>
+      </div>
+
+      <!-- Streamer -->
+      <div class="price-card">
+        <div class="price-name">Streamer</div>
+        <div class="price-amount">$19.99<span>/mes</span></div>
+        <div class="price-period">O $159.99/año (-33%)</div>
+        <ul class="price-features">
+          <li>Todo lo de Coach</li>
+          <li>Overlay OBS en vivo</li>
+          <li>Branding personalizable</li>
+          <li>Widget para stream</li>
+          <li>Soporte prioritario</li>
+        </ul>
+        <button class="btn-price outline">Para Streamers</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-box">
+      <h2 class="cta-title">¿Listo para ganar más?</h2>
+      <p class="cta-desc">
+        Únete a más de 2,000 jugadores que ya usan IA para mejorar sus decisiones en draft.
+      </p>
+      <form class="email-form" onsubmit="handleEmail(event)">
+        <input type="email" class="email-input" placeholder="tu@email.com" required>
+        <button type="submit" class="btn-primary">NOTIFICARME</button>
+      </form>
+      <p style="font-size: 12px; color: #4a5a7a; margin-top: 16px;">
+        Lanzamiento en 2 semanas. Acceso early + 1 mes gratis para los primeros 100.
+      </p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div>© 2025 LoL Strategist. Todos los derechos reservados.</div>
+    <div class="footer-links">
+      <a href="#">Términos</a>
+      <a href="#">Privacidad</a>
+      <a href="#">Contacto</a>
+    </div>
+  </footer>
+
+  <script>
+    function scrollToTry() {
+      // Scroll to MVP demo section or trigger navigation
+      alert('¡Desliza hacia abajo para probar el analizador de compositions!');
+    }
+
+    function handleEmail(e) {
+      e.preventDefault();
+      const email = e.target.querySelector('input').value;
+      // Here you'd send to your backend/newsletter service
+      alert(`¡Gracias! Te notificaremos cuando lancemos. (${email})`);
+      e.target.reset();
+    }
+  </script>
+</body>
+</html>

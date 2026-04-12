@@ -1,0 +1,15 @@
+{
+  "name": "trackerstat",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace @trackerstat/web",
+    "build:web": "npm run build --workspace @trackerstat/web",
+    "lint:web": "npm run lint --workspace @trackerstat/web",
+    "install:web": "npm install --workspace @trackerstat/web"
+  }
+}

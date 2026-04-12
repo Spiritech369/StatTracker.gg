@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 214 53% 8%;
+    --foreground: 210 40% 98%;
+    --card: 220 47% 11%;
+    --card-foreground: 210 40% 98%;
+    --popover: 220 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 188 100% 68%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 222 33% 18%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 222 25% 18%;
+    --muted-foreground: 215 20% 70%;
+    --accent: 226 100% 77%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 217 32% 18%;
+    --input: 217 32% 18%;
+    --ring: 188 100% 68%;
+    --radius: 1rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    background:
+      radial-gradient(circle at top, rgba(56, 189, 248, 0.16), transparent 30%),
+      radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.18), transparent 22%),
+      linear-gradient(180deg, #07111f 0%, #091424 48%, #050b15 100%);
+    color: white;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  .font-brand {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .hero-shell {
+    position: relative;
+    overflow: hidden;
+    background:
+      linear-gradient(135deg, rgba(7, 17, 31, 0.88) 0%, rgba(11, 25, 43, 0.82) 55%, rgba(19, 25, 56, 0.78) 100%),
+      url('/hero-bg.jpg') center/cover no-repeat;
+  }
+
+  .hero-shell::after {
+    content: '';
+    position: absolute;
+    inset: auto -10% -22rem auto;
+    width: 34rem;
+    height: 34rem;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(56, 189, 248, 0) 72%);
+    filter: blur(8px);
+    pointer-events: none;
+  }
+
+  .hero-noise {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: linear-gradient(180deg, rgba(255, 255, 255, 0.6), transparent 95%);
+    pointer-events: none;
+  }
+
+  .panel-card {
+    @apply rounded-[32px] border border-white/10 bg-white/5 p-6 backdrop-blur-xl sm:p-7;
+    box-shadow: 0 20px 80px rgba(2, 6, 23, 0.35);
+  }
+
+  .section-kicker {
+    @apply text-xs uppercase tracking-[0.28em] text-cyan-200;
+  }
+
+  .section-title {
+    @apply mt-3 max-w-3xl text-3xl font-semibold leading-tight text-white sm:text-4xl;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #040912;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(103, 232, 249, 0.55), rgba(129, 140, 248, 0.55));
+  border-radius: 9999px;
+}
+
+#root {
+  width: 100%;
+}
