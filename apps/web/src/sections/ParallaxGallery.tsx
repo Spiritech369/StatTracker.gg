@@ -7,14 +7,10 @@ import { parallaxGalleryConfig } from '../config';
 gsap.registerPlugin(ScrollTrigger);
 
 const ParallaxGallery = () => {
-  // Null check: if config is empty, do not render
-  if (
-    parallaxGalleryConfig.parallaxImagesTop.length === 0 &&
-    parallaxGalleryConfig.galleryImages.length === 0 &&
-    !parallaxGalleryConfig.sectionTitle
-  ) {
-    return null;
-  }
+  const hasContent =
+    parallaxGalleryConfig.parallaxImagesTop.length > 0 ||
+    parallaxGalleryConfig.galleryImages.length > 0 ||
+    Boolean(parallaxGalleryConfig.sectionTitle);
 
   const sectionRef = useRef<HTMLDivElement>(null);
   const parallaxContainerRef = useRef<HTMLDivElement>(null);
@@ -25,6 +21,7 @@ const ParallaxGallery = () => {
   const scrollTriggerRefs = useRef<ScrollTrigger[]>([]);
 
   useEffect(() => {
+    if (!hasContent) return;
     if (!sectionRef.current) return;
 
     const ctx = gsap.context(() => {
@@ -87,6 +84,10 @@ const ParallaxGallery = () => {
       tourSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  if (!hasContent) {
+    return null;
+  }
 
   return (
     <section

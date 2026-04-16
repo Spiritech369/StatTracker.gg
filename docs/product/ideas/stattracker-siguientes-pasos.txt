@@ -1,0 +1,23 @@
+🗺️ Your Improvement Roadmap
+Here are steps you can take yourself to improve TrackerStat.gg:
+
+Easy Wins (Do These First)
+Delete unused API routes — /api/analyze/route.ts and /api/analyze-image/route.ts are leftover development code causing 401 errors in your logs. Delete them if unused.
+Add real game images — Replace undefined image paths for Rematch, WoW, Helldivers 2, and 2XKO with actual game artwork in /public/games/.
+Add next-themes dark/light mode toggle — Your CSS already supports it; just wrap the app with ThemeProvider and add a toggle button in the navbar.
+Add SEO metadata — Create a metadata export in layout.tsx with title, description, OpenGraph tags for social sharing.
+Medium Effort (High Impact)
+Split page.tsx into components — At 4400+ lines, this file is hard to maintain. Extract each game section (LoLChampions, ValorantAgents, etc.) into separate files under src/components/games/.
+Add real-time data polling indicators — Show a subtle "Refreshing..." animation when data is being fetched, and flash the new values when they update.
+Implement user search profiles — Let users type their Riot ID / Steam ID and pull their personal match history and stats.
+Add keyboard navigation — Arrow keys to navigate the game list, Enter to select, Escape to go back.
+Add shareable tier list links — Generate URLs with custom tier list configurations that users can share.
+Advanced (Big Features)
+Add authentication with NextAuth.js — Already in your stack. Let users save favorite champions, track their ranked progress, and customize their dashboard.
+Add a Prisma database — Store user preferences, custom tier lists, saved builds, and match history for authenticated users.
+Add WebSocket real-time updates — For "Live Game Tracking" sections, push real-time match data to the client.
+Build a REST API for third-party integrations — Expose game stats as a public API (mentioned in your Team pricing tier).
+Add internationalization (i18n) — Your UI is in Spanish; add language switching for English, Portuguese, etc. using next-intl.
+Performance optimization — Use dynamic() imports for heavy game sections (lazy load), add loading.tsx Suspense boundaries, and optimize the FloatingParticles canvas with OffscreenCanvas.
+
+

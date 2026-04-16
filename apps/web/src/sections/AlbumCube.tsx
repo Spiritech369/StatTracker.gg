@@ -58,10 +58,7 @@ const Cube = ({ rotationProgress }: CubeProps) => {
 };
 
 const AlbumCube = () => {
-  // Null check: if config is empty, do not render
-  if (albumCubeConfig.albums.length === 0 || albumCubeConfig.cubeTextures.length === 0) {
-    return null;
-  }
+  const hasContent = albumCubeConfig.albums.length > 0 && albumCubeConfig.cubeTextures.length > 0;
 
   const sectionRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
@@ -72,6 +69,7 @@ const AlbumCube = () => {
   const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
 
   useEffect(() => {
+    if (!hasContent) return;
     if (!sectionRef.current) return;
 
     const st = ScrollTrigger.create({
@@ -107,6 +105,10 @@ const AlbumCube = () => {
       st.kill();
     };
   }, []);
+
+  if (!hasContent) {
+    return null;
+  }
 
   const currentAlbum = albumCubeConfig.albums[currentAlbumIndex];
 

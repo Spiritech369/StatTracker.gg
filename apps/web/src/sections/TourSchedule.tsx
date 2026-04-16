@@ -7,10 +7,8 @@ import { tourScheduleConfig } from '../config';
 gsap.registerPlugin(ScrollTrigger);
 
 const TourSchedule = () => {
-  // Null check: if config is empty, do not render
-  if (tourScheduleConfig.tourDates.length === 0 && !tourScheduleConfig.sectionTitle) {
-    return null;
-  }
+  const hasContent =
+    tourScheduleConfig.tourDates.length > 0 || Boolean(tourScheduleConfig.sectionTitle);
 
   const sectionRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -19,6 +17,7 @@ const TourSchedule = () => {
   const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
 
   useEffect(() => {
+    if (!hasContent) return;
     if (!sectionRef.current) return;
 
     const st = ScrollTrigger.create({
@@ -35,6 +34,7 @@ const TourSchedule = () => {
   }, []);
 
   useEffect(() => {
+    if (!hasContent) return;
     if (!isVisible || !contentRef.current) return;
 
     const ctx = gsap.context(() => {
@@ -68,6 +68,10 @@ const TourSchedule = () => {
   };
 
   const TOUR_DATES = tourScheduleConfig.tourDates;
+
+  if (!hasContent) {
+    return null;
+  }
 
   return (
     <section

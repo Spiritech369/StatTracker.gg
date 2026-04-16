@@ -8,7 +8,7 @@ Este README no describe solo la UI actual. Define lo que falta implementar, en o
 
 Hoy el proyecto es principalmente:
 
-- frontend React/Vite
+- frontend Next.js con App Router
 - shell de producto con varias vistas internas
 - datos mock estructurados para champions/builds/matchups
 - integracion parcial con Riot Data Dragon
@@ -676,7 +676,7 @@ Mover fuera de `apps/web` o refactorizar:
 - lookup Riot directo desde frontend
 - datos mock como fuente principal
 - logica entera en un solo `App.tsx`
-- navegacion basada solo en estado local
+- mezcla de stacks incompatibles dentro de `apps/web`
 
 ## Lo que puede quedarse del frontend actual
 
@@ -684,6 +684,12 @@ Mover fuera de `apps/web` o refactorizar:
 - componentes presentacionales reutilizables
 - estructura conceptual de overview/profile/builds/counters
 - branding inicial
+
+## Notas de estructura actuales
+
+La base activa del frontend es `Next.js` dentro de `apps/web/src/app`.
+
+Todo lo que pertenezca al shell anterior de `Vite + React Router` debe vivir como referencia o legado, no mezclado en la ruta principal de ejecucion del producto.
 
 ## Fuente unica de verdad
 

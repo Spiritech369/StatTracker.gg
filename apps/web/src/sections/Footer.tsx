@@ -14,10 +14,10 @@ const SOCIAL_ICON_MAP = {
 };
 
 const Footer = () => {
-  // Null check: if config is empty, do not render
-  if (!footerConfig.brandName && !footerConfig.heroTitle && footerConfig.socialLinks.length === 0) {
-    return null;
-  }
+  const hasContent =
+    Boolean(footerConfig.brandName) ||
+    Boolean(footerConfig.heroTitle) ||
+    footerConfig.socialLinks.length > 0;
 
   const sectionRef = useRef<HTMLDivElement>(null);
   const portraitRef = useRef<HTMLDivElement>(null);
@@ -26,6 +26,7 @@ const Footer = () => {
   const scrollTriggerRefs = useRef<ScrollTrigger[]>([]);
 
   useEffect(() => {
+    if (!hasContent) return;
     if (!sectionRef.current) return;
 
     const ctx = gsap.context(() => {
@@ -61,6 +62,10 @@ const Footer = () => {
       alert(footerConfig.subscribeAlertMessage);
     }
   };
+
+  if (!hasContent) {
+    return null;
+  }
 
   return (
     <section

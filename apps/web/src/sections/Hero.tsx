@@ -11,10 +11,10 @@ const ICON_MAP = {
 };
 
 const Hero = () => {
-  // Null check: if config is empty, do not render
-  if (!heroConfig.decodeText && !heroConfig.brandName && heroConfig.navItems.length === 0) {
-    return null;
-  }
+  const hasContent =
+    Boolean(heroConfig.decodeText) ||
+    Boolean(heroConfig.brandName) ||
+    heroConfig.navItems.length > 0;
 
   const heroRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
@@ -27,6 +27,7 @@ const Hero = () => {
 
   // Decode text effect
   useEffect(() => {
+    if (!hasContent) return;
     let iteration = 0;
     const maxIterations = TARGET_TEXT.length * 8;
 
@@ -56,6 +57,7 @@ const Hero = () => {
 
   // GSAP animations
   useEffect(() => {
+    if (!hasContent) return;
     const ctx = gsap.context(() => {
       // Nav slide in
       gsap.fromTo(
@@ -81,6 +83,10 @@ const Hero = () => {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  if (!hasContent) {
+    return null;
+  }
 
   return (
     <section
