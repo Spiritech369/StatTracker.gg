@@ -14,13 +14,19 @@
     "migrate": "prisma migrate dev",
     "reset": "prisma migrate reset",
     "studio": "prisma studio",
+    "seed": "tsx prisma/seed.ts",
     "typecheck": "tsc --noEmit"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
-    "@prisma/client": "^6.11.1"
+    "@prisma/client": "^6.11.1",
+    "@trackerstat/sdk": "workspace:*"
   },
   "devDependencies": {
     "prisma": "^6.11.1",
+    "tsx": "^4.19.2",
     "typescript": "^5.9.3"
   }
 }

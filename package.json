@@ -22,6 +22,7 @@
     "db:generate": "pnpm --filter @trackerstat/database generate",
     "db:push": "pnpm --filter @trackerstat/database push",
     "db:migrate": "pnpm --filter @trackerstat/database migrate",
+    "db:seed": "pnpm --filter @trackerstat/database seed",
     "db:studio": "pnpm --filter @trackerstat/database studio",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",

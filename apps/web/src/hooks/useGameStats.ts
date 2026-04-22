@@ -1,6 +1,8 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
+import { trpc } from '@/lib/trpc'
 
 // ─── Types ───────────────────────────────────
 
@@ -57,22 +59,55 @@ export function useGameStats({
   enabled = true,
   refetchInterval = 5 * 60 * 1000,
 }: UseGameStatsOptions) {
-  return useQuery<GameStatsResponse>({
+  const isLol = gameId === 'lol'
+
+  const lolQuery = trpc.lol.getChampionStats.useQuery(undefined, {
+    enabled: enabled && isLol,
+    refetchInterval: isLol ? refetchInterval : false,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 2,
+  })
+
+  const mockQuery = useQuery<GameStatsResponse>({
     queryKey: ['gameStats', gameId],
-    queryFn: async (): Promise<GameStatsResponse> => {
+    queryFn: async () => {
       const res = await fetch(`/api/stats/${gameId}`)
-      if (!res.ok) {
-        throw new Error(`Failed to fetch ${gameId} stats`)
-      }
+      if (!res.ok) throw new Error(`Failed to fetch ${gameId} stats`)
       return res.json()
     },
-    enabled,
-    refetchInterval,
-    staleTime: 2 * 60 * 1000, // 2 min stale
-    gcTime: 10 * 60 * 1000, // 10 min garbage collection
+    enabled: enabled && !isLol,
+    refetchInterval: !isLol ? refetchInterval : false,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
   })
+
+  const data = useMemo<GameStatsResponse | undefined>(() => {
+    if (isLol) {
+      if (!lolQuery.data) return undefined
+      return {
+        entities: lolQuery.data.entities,
+        patchLabel: lolQuery.data.patchLabel,
+        lastUpdated: lolQuery.data.lastUpdated,
+        source: lolQuery.data.source,
+        metaInsights: lolQuery.data.metaInsights,
+      }
+    }
+    return mockQuery.data
+  }, [isLol, lolQuery.data, mockQuery.data])
+
+  const active = isLol ? lolQuery : mockQuery
+
+  return {
+    data,
+    isLoading: active.isLoading,
+    isFetching: active.isFetching,
+    isError: active.isError,
+    error: active.error,
+    refetch: active.refetch,
+  }
 }
 
 // ─── Utility: format last updated time ──────

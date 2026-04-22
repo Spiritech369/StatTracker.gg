@@ -104,17 +104,19 @@ pnpm check:fix                  # Biome auto-fix
 - ✅ Monorepo con pnpm workspaces
 - ✅ Postgres + Redis vía Docker Compose
 - ✅ `@trackerstat/database` con schema inicial
-- ✅ `@trackerstat/api` scaffold con Fastify + tRPC, 2 endpoints (`health.ping`, `user.me`)
-- ✅ `@trackerstat/web` conectado al tRPC client
-- ⏳ Auth — pendiente (NextAuth v5)
-- ⏳ Riot API client — pendiente
-- ⏳ Workers de ingesta — pendiente
-- ⏳ Reemplazar mocks en `src/app/api/stats/*` con endpoints reales del API — pendiente (vertical slice LoL primero)
+- ✅ `@trackerstat/api` con Fastify + tRPC: `health.ping`, `user.me`, `lol.getChampionStats`
+- ✅ `@trackerstat/web` conectado al tRPC client (LoL ya en vivo vía tRPC)
+- ✅ `@trackerstat/sdk` con cliente Data Dragon tipado (`getVersions`, `getChampions`, `getLoLRole`)
+- ✅ Seed de `ChampionStat` para LoL (`pnpm db:seed`)
+- ⏳ Auth — pendiente (NextAuth v5) — Sprint 3 Fase B
+- ⏳ Worker de ingesta daily (Data Dragon → ChampionStat) — Sprint 3 Fase B
+- ⏳ Riot API v4/v5 client (match-v5, rate limiter) — Sprint 3 Fase B
+- ⏳ Reemplazar mocks restantes (`tft`, `valorant`, `dota2`, etc.) — post vertical slice
 
-## Próximos hitos (Sprint 3)
+## Próximos hitos (Sprint 3 · Fase B)
 
 1. Implementar **NextAuth v5** con Credentials + Discord + Riot RSO
-2. Crear **Riot API client** en `packages/sdk` (rate-limited, typed)
-3. Endpoint `lol.getChampionStats(patch)` alimentado por la DB
-4. Worker que ingiere Riot Data Dragon a diario → `ChampionStat`
-5. Reemplazar `apps/web/src/app/api/stats/lol/route.ts` con call a tRPC
+2. Extender `@trackerstat/sdk` con Riot API v4/v5 (match-v5, rate-limited)
+3. Worker en `apps/workers` que ingiere Data Dragon a diario → `ChampionStat`
+4. Endpoint `lol.getMatchHistory(puuid)` protegido por auth
+5. Replicar el patrón LoL → TFT (segundo vertical slice)
