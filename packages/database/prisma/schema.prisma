@@ -102,7 +102,10 @@ model MatchSnapshot {
   matchId       String
   game          Game
   queue         String?
+  gameMode      String?
   championId    Int?
+  championName  String?
+  teamPosition  String?
   win           Boolean
   kills         Int
   deaths        Int
@@ -116,6 +119,7 @@ model MatchSnapshot {
 
   @@unique([riotAccountId, matchId])
   @@index([game, playedAt])
+  @@index([riotAccountId, playedAt])
   @@map("match_snapshots")
 }
 

@@ -98,28 +98,31 @@ function tierFromScore(score: number): Tier {
 
 const MatchSummaryOutput = z.object({
   matchId: z.string(),
-  gameMode: z.string(),
+  gameMode: z.string().nullable(),
   queueId: z.number(),
   gameStartTimestamp: z.number(),
   gameDuration: z.number(),
-  championName: z.string(),
-  championId: z.number(),
+  championName: z.string().nullable(),
+  championId: z.number().nullable(),
   win: z.boolean(),
   kills: z.number(),
   deaths: z.number(),
   assists: z.number(),
-  teamPosition: z.string().optional(),
+  teamPosition: z.string().nullable(),
 })
 
 const MatchHistoryInput = z.object({
   gameName: z.string().min(1).optional(),
   tagLine: z.string().min(1).optional(),
   puuid: z.string().min(1).optional(),
+  region: z.string().min(2).max(8).default('NA'),
   count: z.number().int().min(1).max(20).default(10),
 })
 
 const MatchHistoryOutput = z.object({
   puuid: z.string(),
+  gameName: z.string().nullable(),
+  tagLine: z.string().nullable(),
   matches: z.array(MatchSummaryOutput),
 })
 
@@ -127,45 +130,99 @@ export const lolRouter = router({
   getMatchHistory: authedProcedure
     .input(MatchHistoryInput)
     .output(MatchHistoryOutput)
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const client = getRiotClient()
 
-      let puuid = input.puuid
-      if (!puuid) {
-        if (!input.gameName || !input.tagLine) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Provide either puuid or (gameName + tagLine)',
-          })
-        }
-        const account = await client.account.byRiotId(input.gameName, input.tagLine)
-        puuid = account.puuid
+      let account: { puuid: string; gameName?: string; tagLine?: string }
+      if (input.puuid) {
+        account = await client.account.byPuuid(input.puuid)
+      } else if (input.gameName && input.tagLine) {
+        account = await client.account.byRiotId(input.gameName, input.tagLine)
+      } else {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Provide either puuid or (gameName + tagLine)',
+        })
       }
 
-      const ids = await client.match.idsByPuuid(puuid, { count: input.count })
-      const matches = await Promise.all(
-        ids.map(async (id) => {
+      const gameName = account.gameName ?? input.gameName ?? 'unknown'
+      const tagLine = account.tagLine ?? input.tagLine ?? 'unknown'
+
+      const riotAccount = await ctx.prisma.riotAccount.upsert({
+        where: { puuid: account.puuid },
+        update: { gameName, tagLine, lastSyncedAt: new Date() },
+        create: {
+          userId: ctx.userId,
+          puuid: account.puuid,
+          gameName,
+          tagLine,
+          region: input.region,
+        },
+      })
+
+      const ids = await client.match.idsByPuuid(account.puuid, { count: input.count })
+
+      const existing = await ctx.prisma.matchSnapshot.findMany({
+        where: { riotAccountId: riotAccount.id, matchId: { in: ids } },
+        select: { matchId: true },
+      })
+      const existingSet = new Set(existing.map((e) => e.matchId))
+      const missing = ids.filter((id) => !existingSet.has(id))
+
+      await Promise.all(
+        missing.map(async (id) => {
           const match = await client.match.byId(id)
-          const me = match.info.participants.find((p) => p.puuid === puuid)
-          if (!me) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
-          return {
-            matchId: match.metadata.matchId,
-            gameMode: match.info.gameMode,
-            queueId: match.info.queueId,
-            gameStartTimestamp: match.info.gameStartTimestamp,
-            gameDuration: match.info.gameDuration,
-            championName: me.championName,
-            championId: me.championId,
-            win: me.win,
-            kills: me.kills,
-            deaths: me.deaths,
-            assists: me.assists,
-            teamPosition: me.teamPosition,
-          }
+          const me = match.info.participants.find((p) => p.puuid === account.puuid)
+          if (!me) return
+          await ctx.prisma.matchSnapshot.upsert({
+            where: {
+              riotAccountId_matchId: { riotAccountId: riotAccount.id, matchId: id },
+            },
+            update: {},
+            create: {
+              riotAccountId: riotAccount.id,
+              matchId: id,
+              game: 'LOL',
+              queue: String(match.info.queueId),
+              gameMode: match.info.gameMode,
+              championId: me.championId,
+              championName: me.championName,
+              teamPosition: me.teamPosition ?? null,
+              win: me.win,
+              kills: me.kills,
+              deaths: me.deaths,
+              assists: me.assists,
+              durationSec: match.info.gameDuration,
+              playedAt: new Date(match.info.gameStartTimestamp),
+            },
+          })
         }),
       )
 
-      return { puuid, matches }
+      const rows = await ctx.prisma.matchSnapshot.findMany({
+        where: { riotAccountId: riotAccount.id, matchId: { in: ids } },
+        orderBy: { playedAt: 'desc' },
+      })
+
+      return {
+        puuid: account.puuid,
+        gameName: riotAccount.gameName,
+        tagLine: riotAccount.tagLine,
+        matches: rows.map((r) => ({
+          matchId: r.matchId,
+          gameMode: r.gameMode,
+          queueId: Number(r.queue ?? 0),
+          gameStartTimestamp: r.playedAt.getTime(),
+          gameDuration: r.durationSec,
+          championName: r.championName,
+          championId: r.championId,
+          win: r.win,
+          kills: r.kills,
+          deaths: r.deaths,
+          assists: r.assists,
+          teamPosition: r.teamPosition,
+        })),
+      }
     }),
 
   getChampionStats: publicProcedure
