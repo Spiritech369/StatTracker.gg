@@ -108,15 +108,22 @@ pnpm check:fix                  # Biome auto-fix
 - ✅ `@trackerstat/web` conectado al tRPC client (LoL ya en vivo vía tRPC)
 - ✅ `@trackerstat/sdk` con cliente Data Dragon tipado (`getVersions`, `getChampions`, `getLoLRole`)
 - ✅ Seed de `ChampionStat` para LoL (`pnpm db:seed`)
-- ⏳ Auth — pendiente (NextAuth v5) — Sprint 3 Fase B
+- ✅ NextAuth v5 con Credentials + Discord + Prisma adapter; API valida JWT via cookie compartida
 - ⏳ Worker de ingesta daily (Data Dragon → ChampionStat) — Sprint 3 Fase B
 - ⏳ Riot API v4/v5 client (match-v5, rate limiter) — Sprint 3 Fase B
 - ⏳ Reemplazar mocks restantes (`tft`, `valorant`, `dota2`, etc.) — post vertical slice
 
-## Próximos hitos (Sprint 3 · Fase B)
+## Próximos hitos (Sprint 3 · Fase B restante)
 
-1. Implementar **NextAuth v5** con Credentials + Discord + Riot RSO
+1. UI de login/registro + provider Riot RSO (ampliar auth)
 2. Extender `@trackerstat/sdk` con Riot API v4/v5 (match-v5, rate-limited)
 3. Worker en `apps/workers` que ingiere Data Dragon a diario → `ChampionStat`
 4. Endpoint `lol.getMatchHistory(puuid)` protegido por auth
 5. Replicar el patrón LoL → TFT (segundo vertical slice)
+
+## Auth flow
+
+- Web corre NextAuth v5 en `apps/web/src/lib/auth.ts` con Prisma adapter + JWT strategy.
+- `/api/auth/[...nextauth]/route.ts` expone los handlers de Auth.js (signin, callback, session, etc.).
+- Cookie `authjs.session-token` se emite en `localhost` (dev) y se comparte con el API gracias a `credentials: 'include'` en el tRPC client + `origin` exacto en CORS.
+- En el API, `createContext` decodifica la cookie con `next-auth/jwt` (`AUTH_SECRET` compartido) y poblá `ctx.userId`. `authedProcedure` rechaza sin sesión.
