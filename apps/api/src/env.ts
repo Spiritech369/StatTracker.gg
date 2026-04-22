@@ -8,6 +8,9 @@ const schema = z.object({
   API_CORS_ORIGIN: z.string().default('http://localhost:3000'),
   DATABASE_URL: z.string().url().optional(),
   REDIS_URL: z.string().url().optional(),
+  AUTH_SECRET: z.string().optional(),
+  RIOT_API_KEY: z.string().optional(),
+  RIOT_REGIONAL: z.enum(['americas', 'europe', 'asia', 'sea']).default('americas'),
 })
 
 export const env = schema.parse(process.env)

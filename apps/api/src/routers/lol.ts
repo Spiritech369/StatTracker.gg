@@ -4,8 +4,10 @@ import {
   getLoLRole,
   patchLabelFromVersion,
 } from '@trackerstat/sdk/riot'
+import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
-import { publicProcedure, router } from '../trpc/trpc.js'
+import { getRiotClient } from '../riot.js'
+import { authedProcedure, publicProcedure, router } from '../trpc/trpc.js'
 
 const TIERS = ['S', 'A', 'B', 'C'] as const
 type Tier = (typeof TIERS)[number]
@@ -94,7 +96,78 @@ function tierFromScore(score: number): Tier {
   return 'C'
 }
 
+const MatchSummaryOutput = z.object({
+  matchId: z.string(),
+  gameMode: z.string(),
+  queueId: z.number(),
+  gameStartTimestamp: z.number(),
+  gameDuration: z.number(),
+  championName: z.string(),
+  championId: z.number(),
+  win: z.boolean(),
+  kills: z.number(),
+  deaths: z.number(),
+  assists: z.number(),
+  teamPosition: z.string().optional(),
+})
+
+const MatchHistoryInput = z.object({
+  gameName: z.string().min(1).optional(),
+  tagLine: z.string().min(1).optional(),
+  puuid: z.string().min(1).optional(),
+  count: z.number().int().min(1).max(20).default(10),
+})
+
+const MatchHistoryOutput = z.object({
+  puuid: z.string(),
+  matches: z.array(MatchSummaryOutput),
+})
+
 export const lolRouter = router({
+  getMatchHistory: authedProcedure
+    .input(MatchHistoryInput)
+    .output(MatchHistoryOutput)
+    .query(async ({ input }) => {
+      const client = getRiotClient()
+
+      let puuid = input.puuid
+      if (!puuid) {
+        if (!input.gameName || !input.tagLine) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Provide either puuid or (gameName + tagLine)',
+          })
+        }
+        const account = await client.account.byRiotId(input.gameName, input.tagLine)
+        puuid = account.puuid
+      }
+
+      const ids = await client.match.idsByPuuid(puuid, { count: input.count })
+      const matches = await Promise.all(
+        ids.map(async (id) => {
+          const match = await client.match.byId(id)
+          const me = match.info.participants.find((p) => p.puuid === puuid)
+          if (!me) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
+          return {
+            matchId: match.metadata.matchId,
+            gameMode: match.info.gameMode,
+            queueId: match.info.queueId,
+            gameStartTimestamp: match.info.gameStartTimestamp,
+            gameDuration: match.info.gameDuration,
+            championName: me.championName,
+            championId: me.championId,
+            win: me.win,
+            kills: me.kills,
+            deaths: me.deaths,
+            assists: me.assists,
+            teamPosition: me.teamPosition,
+          }
+        }),
+      )
+
+      return { puuid, matches }
+    }),
+
   getChampionStats: publicProcedure
     .input(z.object({ patch: z.string().optional() }).optional())
     .output(LoLStatsOutput)
