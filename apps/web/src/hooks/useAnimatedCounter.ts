@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 /**
  * Hook that animates a number from 0 to the target value when triggered.
@@ -15,9 +15,16 @@ export function useAnimatedCounter(
     delay?: number
     prefix?: string
     suffix?: string
-  } = {}
+  } = {},
 ) {
-  const { duration = 1500, decimals = 0, enabled = true, delay = 0, prefix = '', suffix = '' } = options
+  const {
+    duration = 1500,
+    decimals = 0,
+    enabled = true,
+    delay = 0,
+    prefix = '',
+    suffix = '',
+  } = options
   const initialDisplay = useMemo(() => prefix + '0' + suffix, [prefix, suffix])
   const [display, setDisplay] = useState(initialDisplay)
   const hasAnimatedRef = useRef(false)
@@ -44,14 +51,10 @@ export function useAnimatedCounter(
 
       const progress = Math.min(elapsed / duration, 1)
       // Ease out cubic
-      const eased = 1 - Math.pow(1 - progress, 3)
+      const eased = 1 - (1 - progress) ** 3
       const current = currentTarget * eased
 
-      setDisplay(
-        prefix +
-        current.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',') +
-        suffix
-      )
+      setDisplay(prefix + current.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + suffix)
 
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(step)
@@ -70,7 +73,7 @@ export function useAnimatedCounter(
           animate()
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.3 },
     )
 
     if (ref.current) {

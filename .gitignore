@@ -8,5 +8,15 @@ coverage
 *.log
 apps/*/node_modules
 apps/*/dist
+apps/*/.next
+apps/*/tsconfig.tsbuildinfo
 packages/*/node_modules
 packages/*/dist
+
+# Editor / tooling local state
+.claude/
+.vscode/
+.idea/
+
+# Tooling leftovers
+.minimax/

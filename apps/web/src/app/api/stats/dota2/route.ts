@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getCached, setCache, CACHE_TTL } from '@/lib/cache'
+import { CACHE_TTL, getCached, setCache } from '@/lib/cache'
 
 // ─── Types ───────────────────────────────────
 interface OpenDotaHero {
@@ -80,7 +80,17 @@ const ROLE_MAP: Record<string, string> = {
 
 function mapRole(roles: string[]): string {
   // Priority: Carry > Support > Initiator > Durable > others
-  const priority = ['Carry', 'Support', 'Initiator', 'Durable', 'Nuker', 'Disabler', 'Pusher', 'Escape', 'Jungler']
+  const priority = [
+    'Carry',
+    'Support',
+    'Initiator',
+    'Durable',
+    'Nuker',
+    'Disabler',
+    'Pusher',
+    'Escape',
+    'Jungler',
+  ]
   for (const p of priority) {
     if (roles.includes(p)) return p
   }
@@ -131,15 +141,46 @@ async function fetchDota2Stats(): Promise<StatsResponse> {
     const heroesData = heroesRes.ok ? await heroesRes.json() : {}
 
     // Compute total picks across all heroes for pick rate percentage
-    const totalPicks = heroStats.reduce((sum, h) => sum + (h['1_pick'] || 0) + (h['2_pick'] || 0) + (h['3_pick'] || 0) + (h['4_pick'] || 0) + (h['5_pick'] || 0) + (h['6_pick'] || 0) + (h['7_pick'] || 0) + (h['8_pick'] || 0), 0)
+    const totalPicks = heroStats.reduce(
+      (sum, h) =>
+        sum +
+        (h['1_pick'] || 0) +
+        (h['2_pick'] || 0) +
+        (h['3_pick'] || 0) +
+        (h['4_pick'] || 0) +
+        (h['5_pick'] || 0) +
+        (h['6_pick'] || 0) +
+        (h['7_pick'] || 0) +
+        (h['8_pick'] || 0),
+      0,
+    )
 
     const entities: GameEntity[] = heroStats
-      .map(hero => {
-        const totalPick = (hero['1_pick'] || 0) + (hero['2_pick'] || 0) + (hero['3_pick'] || 0) + (hero['4_pick'] || 0) + (hero['5_pick'] || 0) + (hero['6_pick'] || 0) + (hero['7_pick'] || 0) + (hero['8_pick'] || 0)
-        const totalWin = (hero['1_win'] || 0) + (hero['2_win'] || 0) + (hero['3_win'] || 0) + (hero['4_win'] || 0) + (hero['5_win'] || 0) + (hero['6_win'] || 0) + (hero['7_win'] || 0) + (hero['8_win'] || 0)
+      .map((hero) => {
+        const totalPick =
+          (hero['1_pick'] || 0) +
+          (hero['2_pick'] || 0) +
+          (hero['3_pick'] || 0) +
+          (hero['4_pick'] || 0) +
+          (hero['5_pick'] || 0) +
+          (hero['6_pick'] || 0) +
+          (hero['7_pick'] || 0) +
+          (hero['8_pick'] || 0)
+        const totalWin =
+          (hero['1_win'] || 0) +
+          (hero['2_win'] || 0) +
+          (hero['3_win'] || 0) +
+          (hero['4_win'] || 0) +
+          (hero['5_win'] || 0) +
+          (hero['6_win'] || 0) +
+          (hero['7_win'] || 0) +
+          (hero['8_win'] || 0)
         const winrate = totalPick > 0 ? +((totalWin / totalPick) * 100).toFixed(1) : 50
         const pickrate = totalPicks > 0 ? +((totalPick / totalPicks) * 100).toFixed(1) : 0
-        const banrate = totalPicks > 0 ? +(((hero['7_pick'] || 0) * 0.05 / totalPicks) * 100 * 100).toFixed(1) : 0
+        const banrate =
+          totalPicks > 0
+            ? +((((hero['7_pick'] || 0) * 0.05) / totalPicks) * 100 * 100).toFixed(1)
+            : 0
         const { trend, change } = computeTrend(hero)
 
         return {
@@ -157,11 +198,13 @@ async function fetchDota2Stats(): Promise<StatsResponse> {
       .sort((a, b) => b.winrate - a.winrate)
 
     // Compute meta insights from real data
-    const bestWR = entities.reduce((a, b) => a.winrate > b.winrate ? a : b)
-    const mostPicked = entities.reduce((a, b) => a.pickrate > b.pickrate ? a : b)
+    const bestWR = entities.reduce((a, b) => (a.winrate > b.winrate ? a : b))
+    const mostPicked = entities.reduce((a, b) => (a.pickrate > b.pickrate ? a : b))
     const avgWR = (entities.reduce((a, b) => a + b.winrate, 0) / entities.length).toFixed(1)
-    const sTier = entities.filter(e => e.tier === 'S')
-    const rising = entities.filter(e => e.trend === 'up').sort((a, b) => b.trendChange - a.trendChange)
+    const sTier = entities.filter((e) => e.tier === 'S')
+    const rising = entities
+      .filter((e) => e.trend === 'up')
+      .sort((a, b) => b.trendChange - a.trendChange)
 
     const response: StatsResponse = {
       entities,
@@ -175,16 +218,32 @@ async function fetchDota2Stats(): Promise<StatsResponse> {
             { label: 'Highest Win Rate', value: `${bestWR.winrate}%`, sublabel: bestWR.name },
             { label: 'Most Picked', value: `${mostPicked.pickrate}%`, sublabel: mostPicked.name },
             { label: 'Avg Win Rate', value: `${avgWR}%`, sublabel: `${entities.length} heroes` },
-            { label: 'Rising Fast', value: `+${rising[0]?.trendChange || 0}%`, sublabel: rising[0]?.name || 'N/A' },
+            {
+              label: 'Rising Fast',
+              value: `+${rising[0]?.trendChange || 0}%`,
+              sublabel: rising[0]?.name || 'N/A',
+            },
           ],
         },
         {
           title: 'Tier Breakdown',
           items: [
             { label: 'S-Tier Heroes', value: `${sTier.length}`, sublabel: 'Dominant picks' },
-            { label: 'A-Tier Heroes', value: `${entities.filter(e => e.tier === 'A').length}`, sublabel: 'Strong picks' },
-            { label: 'B-Tier Heroes', value: `${entities.filter(e => e.tier === 'B').length}`, sublabel: 'Viable picks' },
-            { label: 'C-Tier Heroes', value: `${entities.filter(e => e.tier === 'C').length}`, sublabel: 'Niche picks' },
+            {
+              label: 'A-Tier Heroes',
+              value: `${entities.filter((e) => e.tier === 'A').length}`,
+              sublabel: 'Strong picks',
+            },
+            {
+              label: 'B-Tier Heroes',
+              value: `${entities.filter((e) => e.tier === 'B').length}`,
+              sublabel: 'Viable picks',
+            },
+            {
+              label: 'C-Tier Heroes',
+              value: `${entities.filter((e) => e.tier === 'C').length}`,
+              sublabel: 'Niche picks',
+            },
           ],
         },
       ],
@@ -207,7 +266,7 @@ export async function GET() {
   } catch {
     return NextResponse.json(
       { error: 'Failed to fetch Dota 2 stats', entities: [], lastUpdated: 0 },
-      { status: 502 }
+      { status: 502 },
     )
   }
 }

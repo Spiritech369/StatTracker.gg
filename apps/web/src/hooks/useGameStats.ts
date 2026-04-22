@@ -33,7 +33,16 @@ export interface GameStatsResponse {
   error?: string
 }
 
-export type GameId = 'lol' | 'tft' | 'valorant' | 'deadlock' | 'dota2' | 'rematch' | 'wow' | 'helldivers2' | '2xko'
+export type GameId =
+  | 'lol'
+  | 'tft'
+  | 'valorant'
+  | 'deadlock'
+  | 'dota2'
+  | 'rematch'
+  | 'wow'
+  | 'helldivers2'
+  | '2xko'
 
 // ─── Hook ────────────────────────────────────
 
@@ -43,7 +52,11 @@ interface UseGameStatsOptions {
   refetchInterval?: number | false
 }
 
-export function useGameStats({ gameId, enabled = true, refetchInterval = 5 * 60 * 1000 }: UseGameStatsOptions) {
+export function useGameStats({
+  gameId,
+  enabled = true,
+  refetchInterval = 5 * 60 * 1000,
+}: UseGameStatsOptions) {
   return useQuery<GameStatsResponse>({
     queryKey: ['gameStats', gameId],
     queryFn: async (): Promise<GameStatsResponse> => {
@@ -55,8 +68,8 @@ export function useGameStats({ gameId, enabled = true, refetchInterval = 5 * 60 
     },
     enabled,
     refetchInterval,
-    staleTime: 2 * 60 * 1000,  // 2 min stale
-    gcTime: 10 * 60 * 1000,     // 10 min garbage collection
+    staleTime: 2 * 60 * 1000, // 2 min stale
+    gcTime: 10 * 60 * 1000, // 10 min garbage collection
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
   })

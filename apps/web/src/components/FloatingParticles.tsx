@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 interface Particle {
   x: number
@@ -25,13 +25,16 @@ export function FloatingParticles({ count = 30, colors, className = '' }: Floati
   const particlesRef = useRef<Particle[]>([])
   const animRef = useRef<number>(0)
 
-  const defaultColors = useMemo(() => [
-    'rgba(16, 185, 129, 0.15)',
-    'rgba(52, 211, 153, 0.1)',
-    'rgba(245, 158, 11, 0.08)',
-    'rgba(139, 92, 246, 0.08)',
-    'rgba(255, 255, 255, 0.05)',
-  ], [])
+  const defaultColors = useMemo(
+    () => [
+      'rgba(16, 185, 129, 0.15)',
+      'rgba(52, 211, 153, 0.1)',
+      'rgba(245, 158, 11, 0.08)',
+      'rgba(139, 92, 246, 0.08)',
+      'rgba(255, 255, 255, 0.05)',
+    ],
+    [],
+  )
 
   const particleColors = colors || defaultColors
 
@@ -69,7 +72,7 @@ export function FloatingParticles({ count = 30, colors, className = '' }: Floati
     const animate = () => {
       ctx.clearRect(0, 0, w(), h())
 
-      particlesRef.current.forEach(p => {
+      particlesRef.current.forEach((p) => {
         p.x += p.speedX
         p.y += p.speedY
         p.pulse += p.pulseSpeed

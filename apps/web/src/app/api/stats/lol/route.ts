@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getCached, setCache, CACHE_TTL } from '@/lib/cache'
+import { CACHE_TTL, getCached, setCache } from '@/lib/cache'
 
 // ─── Types ───────────────────────────────────
 
@@ -54,41 +54,151 @@ const TAG_TO_ROLE: Record<string, string> = {
 }
 
 const PRIMARY_ROLES: Record<string, string> = {
-  Aatrox: 'Top', Akali: 'Mid', Akshan: 'ADC', Alistar: 'Support', Amumu: 'Jungle',
-  Anivia: 'Mid', Annie: 'Mid', Ashe: 'ADC', AurelionSol: 'Mid', Azir: 'Mid',
-  Bard: 'Support', Blitzcrank: 'Support', Brand: 'Support', Braum: 'Support',
-  Caitlyn: 'ADC', Camille: 'Top', Cassiopeia: 'Mid', ChoGath: 'Top',
-  Corki: 'Mid', Darius: 'Top', Diana: 'Jungle', Draven: 'ADC', DrMundo: 'Top',
-  Ekko: 'Jungle', Elise: 'Jungle', Ezreal: 'ADC', Fiddlesticks: 'Jungle',
-  Fiora: 'Top', Fizz: 'Mid', Galio: 'Mid', Gangplank: 'Top', Garen: 'Top',
-  Gnar: 'Top', Gragas: 'Jungle', Graves: 'Jungle', Gwen: 'Top',
-  Hecarim: 'Jungle', Heimerdinger: 'Mid', Illaoi: 'Top', Irelia: 'Top',
-  Ivern: 'Jungle', Janna: 'Support', JarvanIV: 'Jungle', Jax: 'Top',
-  Jayce: 'Top', Jhin: 'ADC', Jinx: 'ADC', Kaisa: 'ADC', Kalista: 'ADC',
-  Karma: 'Support', Karthus: 'Jungle', Katarina: 'Mid', Kayle: 'Top',
-  Kayn: 'Jungle', Kennen: 'Top', Khazix: 'Jungle', Kindred: 'Jungle',
-  Kled: 'Top', KogMaw: 'ADC', LeBlanc: 'Mid', LeeSin: 'Jungle', Leona: 'Support',
-  Lissandra: 'Mid', Lucian: 'ADC', Lulu: 'Support', Lux: 'Mid',
-  Malphite: 'Top', Malzahar: 'Mid', Maokai: 'Top', MasterYi: 'Jungle',
-  MissFortune: 'ADC', Mordekaiser: 'Top', Morgana: 'Support', Nami: 'Support',
-  Nasus: 'Top', Nautilus: 'Support', Neeko: 'Support', Nidalee: 'Jungle',
-  Nocturne: 'Jungle', Nunu: 'Jungle', Olaf: 'Top', Orianna: 'Mid',
-  Ornn: 'Top', Pantheon: 'Top', Poppy: 'Jungle', Pyke: 'Support',
-  Quinn: 'Top', Rakan: 'Support', Rammus: 'Jungle', RekSai: 'Jungle',
-  Renekton: 'Top', Rengar: 'Jungle', Riven: 'Top', Rumble: 'Top',
-  Ryze: 'Mid', Sejuani: 'Jungle', Senna: 'Support', Sett: 'Top',
-  Shaco: 'Jungle', Shen: 'Top', Shyvana: 'Jungle', Singed: 'Top',
-  Sion: 'Top', Sivir: 'ADC', Skarner: 'Jungle', Sona: 'Support',
-  Soraka: 'Support', Swain: 'Top', Sylas: 'Mid', Syndra: 'Mid',
-  TahmKench: 'Support', Taliyah: 'Mid', Talon: 'Mid', Taric: 'Support',
-  Teemo: 'Top', Thresh: 'Support', Tristana: 'ADC', Trundle: 'Top',
-  Tryndamere: 'Top', TwistedFate: 'Mid', Twitch: 'ADC', Udyr: 'Jungle',
-  Urgot: 'Top', Varus: 'ADC', Vayne: 'ADC', Veigar: 'Mid',
-  VelKoz: 'Mid', Vi: 'Jungle', Viego: 'Jungle', Viktor: 'Mid',
-  Vladimir: 'Top', Volibear: 'Top', Warwick: 'Jungle', Xerath: 'Mid',
-  XinZhao: 'Jungle', Yasuo: 'Mid', Yone: 'Mid', Yorick: 'Top',
-  Yuumi: 'Support', Zac: 'Jungle', Zed: 'Mid', Zeri: 'ADC',
-  Ziggs: 'Mid', Zilean: 'Support', Zyra: 'Support',
+  Aatrox: 'Top',
+  Akali: 'Mid',
+  Akshan: 'ADC',
+  Alistar: 'Support',
+  Amumu: 'Jungle',
+  Anivia: 'Mid',
+  Annie: 'Mid',
+  Ashe: 'ADC',
+  AurelionSol: 'Mid',
+  Azir: 'Mid',
+  Bard: 'Support',
+  Blitzcrank: 'Support',
+  Brand: 'Support',
+  Braum: 'Support',
+  Caitlyn: 'ADC',
+  Camille: 'Top',
+  Cassiopeia: 'Mid',
+  ChoGath: 'Top',
+  Corki: 'Mid',
+  Darius: 'Top',
+  Diana: 'Jungle',
+  Draven: 'ADC',
+  DrMundo: 'Top',
+  Ekko: 'Jungle',
+  Elise: 'Jungle',
+  Ezreal: 'ADC',
+  Fiddlesticks: 'Jungle',
+  Fiora: 'Top',
+  Fizz: 'Mid',
+  Galio: 'Mid',
+  Gangplank: 'Top',
+  Garen: 'Top',
+  Gnar: 'Top',
+  Gragas: 'Jungle',
+  Graves: 'Jungle',
+  Gwen: 'Top',
+  Hecarim: 'Jungle',
+  Heimerdinger: 'Mid',
+  Illaoi: 'Top',
+  Irelia: 'Top',
+  Ivern: 'Jungle',
+  Janna: 'Support',
+  JarvanIV: 'Jungle',
+  Jax: 'Top',
+  Jayce: 'Top',
+  Jhin: 'ADC',
+  Jinx: 'ADC',
+  Kaisa: 'ADC',
+  Kalista: 'ADC',
+  Karma: 'Support',
+  Karthus: 'Jungle',
+  Katarina: 'Mid',
+  Kayle: 'Top',
+  Kayn: 'Jungle',
+  Kennen: 'Top',
+  Khazix: 'Jungle',
+  Kindred: 'Jungle',
+  Kled: 'Top',
+  KogMaw: 'ADC',
+  LeBlanc: 'Mid',
+  LeeSin: 'Jungle',
+  Leona: 'Support',
+  Lissandra: 'Mid',
+  Lucian: 'ADC',
+  Lulu: 'Support',
+  Lux: 'Mid',
+  Malphite: 'Top',
+  Malzahar: 'Mid',
+  Maokai: 'Top',
+  MasterYi: 'Jungle',
+  MissFortune: 'ADC',
+  Mordekaiser: 'Top',
+  Morgana: 'Support',
+  Nami: 'Support',
+  Nasus: 'Top',
+  Nautilus: 'Support',
+  Neeko: 'Support',
+  Nidalee: 'Jungle',
+  Nocturne: 'Jungle',
+  Nunu: 'Jungle',
+  Olaf: 'Top',
+  Orianna: 'Mid',
+  Ornn: 'Top',
+  Pantheon: 'Top',
+  Poppy: 'Jungle',
+  Pyke: 'Support',
+  Quinn: 'Top',
+  Rakan: 'Support',
+  Rammus: 'Jungle',
+  RekSai: 'Jungle',
+  Renekton: 'Top',
+  Rengar: 'Jungle',
+  Riven: 'Top',
+  Rumble: 'Top',
+  Ryze: 'Mid',
+  Sejuani: 'Jungle',
+  Senna: 'Support',
+  Sett: 'Top',
+  Shaco: 'Jungle',
+  Shen: 'Top',
+  Shyvana: 'Jungle',
+  Singed: 'Top',
+  Sion: 'Top',
+  Sivir: 'ADC',
+  Skarner: 'Jungle',
+  Sona: 'Support',
+  Soraka: 'Support',
+  Swain: 'Top',
+  Sylas: 'Mid',
+  Syndra: 'Mid',
+  TahmKench: 'Support',
+  Taliyah: 'Mid',
+  Talon: 'Mid',
+  Taric: 'Support',
+  Teemo: 'Top',
+  Thresh: 'Support',
+  Tristana: 'ADC',
+  Trundle: 'Top',
+  Tryndamere: 'Top',
+  TwistedFate: 'Mid',
+  Twitch: 'ADC',
+  Udyr: 'Jungle',
+  Urgot: 'Top',
+  Varus: 'ADC',
+  Vayne: 'ADC',
+  Veigar: 'Mid',
+  VelKoz: 'Mid',
+  Vi: 'Jungle',
+  Viego: 'Jungle',
+  Viktor: 'Mid',
+  Vladimir: 'Top',
+  Volibear: 'Top',
+  Warwick: 'Jungle',
+  Xerath: 'Mid',
+  XinZhao: 'Jungle',
+  Yasuo: 'Mid',
+  Yone: 'Mid',
+  Yorick: 'Top',
+  Yuumi: 'Support',
+  Zac: 'Jungle',
+  Zed: 'Mid',
+  Zeri: 'ADC',
+  Ziggs: 'Mid',
+  Zilean: 'Support',
+  Zyra: 'Support',
 }
 
 function getRole(id: string, tags: string[]): string {
@@ -108,14 +218,16 @@ async function fetchLoLStats(): Promise<StatsResponse> {
 
   try {
     // Fetch versions first to get current patch
-    const versionsRes = await fetch('https://ddragon.leagueoflegends.com/api/versions.json', { next: { revalidate: 3600 } })
+    const versionsRes = await fetch('https://ddragon.leagueoflegends.com/api/versions.json', {
+      next: { revalidate: 3600 },
+    })
     const versions: string[] = versionsRes.ok ? await versionsRes.json() : ['16.7.1']
     const currentVersion = versions[0] || '16.7.1'
 
     // Fetch champion data
     const champsRes = await fetch(
       `https://ddragon.leagueoflegends.com/cdn/${currentVersion}/data/en_US/champion.json`,
-      { next: { revalidate: 300 } }
+      { next: { revalidate: 300 } },
     )
     if (!champsRes.ok) throw new Error(`Data Dragon failed: ${champsRes.status}`)
 
@@ -131,7 +243,7 @@ async function fetchLoLStats(): Promise<StatsResponse> {
     const now = Date.now()
     const dayFactor = Math.floor(now / (24 * 60 * 60 * 1000)) // Changes daily
 
-    const entities: GameEntity[] = champions.map(champ => {
+    const entities: GameEntity[] = champions.map((champ) => {
       const seed = parseInt(champ.key) + dayFactor * 7
       const role = getRole(champ.id, champ.tags)
 
@@ -161,9 +273,16 @@ async function fetchLoLStats(): Promise<StatsResponse> {
       const trendSeed = seededRandom(seed + 300 + dayFactor)
       let trend: 'up' | 'down' | 'stable'
       let trendChange: number
-      if (trendSeed > 0.7) { trend = 'up'; trendChange = +(0.2 + seededRandom(seed + 400) * 1.5).toFixed(1) }
-      else if (trendSeed < 0.3) { trend = 'down'; trendChange = +(0.2 + seededRandom(seed + 500) * 1.5).toFixed(1) }
-      else { trend = 'stable'; trendChange = +(seededRandom(seed + 600) * 0.5).toFixed(1) }
+      if (trendSeed > 0.7) {
+        trend = 'up'
+        trendChange = +(0.2 + seededRandom(seed + 400) * 1.5).toFixed(1)
+      } else if (trendSeed < 0.3) {
+        trend = 'down'
+        trendChange = +(0.2 + seededRandom(seed + 500) * 1.5).toFixed(1)
+      } else {
+        trend = 'stable'
+        trendChange = +(seededRandom(seed + 600) * 0.5).toFixed(1)
+      }
 
       return {
         name: champ.name,
@@ -179,10 +298,12 @@ async function fetchLoLStats(): Promise<StatsResponse> {
     })
 
     // Compute meta insights
-    const bestWR = entities.reduce((a, b) => a.winrate > b.winrate ? a : b)
-    const mostPicked = entities.reduce((a, b) => a.pickrate > b.pickrate ? a : b)
+    const bestWR = entities.reduce((a, b) => (a.winrate > b.winrate ? a : b))
+    const mostPicked = entities.reduce((a, b) => (a.pickrate > b.pickrate ? a : b))
     const avgWR = (entities.reduce((a, b) => a + b.winrate, 0) / entities.length).toFixed(1)
-    const rising = entities.filter(e => e.trend === 'up').sort((a, b) => b.trendChange - a.trendChange)
+    const rising = entities
+      .filter((e) => e.trend === 'up')
+      .sort((a, b) => b.trendChange - a.trendChange)
 
     const patchLabel = `Patch ${currentVersion.split('.').slice(0, 2).join('.')}`
 
@@ -198,15 +319,28 @@ async function fetchLoLStats(): Promise<StatsResponse> {
             { label: 'Best Win Rate', value: `${bestWR.winrate}%`, sublabel: bestWR.name },
             { label: 'Most Picked', value: `${mostPicked.pickrate}%`, sublabel: mostPicked.name },
             { label: 'Avg Win Rate', value: `${avgWR}%`, sublabel: `${entities.length} champions` },
-            { label: 'Rising Fast', value: `+${rising[0]?.trendChange || 0}%`, sublabel: rising[0]?.name || 'N/A' },
+            {
+              label: 'Rising Fast',
+              value: `+${rising[0]?.trendChange || 0}%`,
+              sublabel: rising[0]?.name || 'N/A',
+            },
           ],
         },
         {
           title: 'Patch Info',
           items: [
             { label: 'Current Patch', value: currentVersion, sublabel: 'Latest version' },
-            { label: 'S-Tier Champions', value: `${entities.filter(e => e.tier === 'S').length}`, sublabel: 'Meta picks' },
-            { label: 'Most Banned', value: `${entities.reduce((a, b) => a.banrate > b.banrate ? a : b).banrate}%`, sublabel: entities.reduce((a, b) => a.banrate > b.banrate ? a : b).name },
+            {
+              label: 'S-Tier Champions',
+              value: `${entities.filter((e) => e.tier === 'S').length}`,
+              sublabel: 'Meta picks',
+            },
+            {
+              label: 'Most Banned',
+              value: `${entities.reduce((a, b) => ((a.banrate ?? 0) > (b.banrate ?? 0) ? a : b)).banrate ?? 0}%`,
+              sublabel: entities.reduce((a, b) => ((a.banrate ?? 0) > (b.banrate ?? 0) ? a : b))
+                .name,
+            },
             { label: 'Data Freshness', value: '< 5 min', sublabel: 'Auto-refreshed' },
           ],
         },
@@ -230,7 +364,7 @@ export async function GET() {
   } catch {
     return NextResponse.json(
       { error: 'Failed to fetch LoL stats', entities: [], lastUpdated: 0 },
-      { status: 502 }
+      { status: 502 },
     )
   }
 }

@@ -45,8 +45,8 @@ export function getCacheAge(key: string): number | null {
 
 // Default TTLs
 export const CACHE_TTL = {
-  SHORT: 60_000,       // 1 minute
-  MEDIUM: 5 * 60_000,  // 5 minutes
-  LONG: 15 * 60_000,   // 15 minutes
-  HOUR: 60 * 60_000,   // 1 hour
+  SHORT: 60_000, // 1 minute
+  MEDIUM: 5 * 60_000, // 5 minutes
+  LONG: 15 * 60_000, // 15 minutes
+  HOUR: 60 * 60_000, // 1 hour
 }

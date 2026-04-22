@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getCached, setCache, CACHE_TTL } from '@/lib/cache'
+import { CACHE_TTL, getCached, setCache } from '@/lib/cache'
 
 interface GameEntity {
   name: string
@@ -27,31 +27,31 @@ interface StatsResponse {
 // ─── Valorant Agent Data (curated community data, updated via seed) ──
 
 const AGENT_ROLES: Record<string, { role: string; baseWR: number; basePR: number }> = {
-  Jett:       { role: 'Duelist',    baseWR: 51.2, basePR: 17.5 },
-  Reyna:      { role: 'Duelist',    baseWR: 50.4, basePR: 16.2 },
-  Raze:       { role: 'Duelist',    baseWR: 49.3, basePR: 13.1 },
-  Phoenix:    { role: 'Duelist',    baseWR: 48.8, basePR: 5.8 },
-  Iso:        { role: 'Duelist',    baseWR: 50.6, basePR: 8.2 },
-  Neon:       { role: 'Duelist',    baseWR: 49.5, basePR: 6.5 },
-  Yoru:       { role: 'Duelist',    baseWR: 48.2, basePR: 4.8 },
-  Omen:       { role: 'Controller', baseWR: 51.5, basePR: 15.0 },
-  Brimstone:  { role: 'Controller', baseWR: 50.2, basePR: 10.8 },
-  Astra:      { role: 'Controller', baseWR: 49.0, basePR: 7.5 },
-  Harbor:     { role: 'Controller', baseWR: 48.5, basePR: 3.2 },
-  Clove:      { role: 'Controller', baseWR: 50.8, basePR: 8.9 },
-  Viper:      { role: 'Controller', baseWR: 50.1, basePR: 7.2 },
-  Killjoy:    { role: 'Sentinel',    baseWR: 51.3, basePR: 13.8 },
-  Cypher:     { role: 'Sentinel',    baseWR: 50.1, basePR: 9.5 },
-  Chamber:    { role: 'Sentinel',    baseWR: 49.0, basePR: 8.2 },
-  Deadlock:   { role: 'Sentinel',    baseWR: 47.8, basePR: 2.5 },
-  Sage:       { role: 'Sentinel',    baseWR: 50.5, basePR: 11.0 },
-  Vyse:       { role: 'Sentinel',    baseWR: 51.0, basePR: 10.5 },
-  Sova:       { role: 'Initiator',   baseWR: 50.9, basePR: 12.5 },
-  Fade:       { role: 'Initiator',   baseWR: 50.0, basePR: 10.2 },
-  Gekko:      { role: 'Initiator',   baseWR: 48.5, basePR: 5.8 },
-  Kayo:       { role: 'Initiator',   baseWR: 47.5, basePR: 5.0 },
-  Skye:       { role: 'Initiator',   baseWR: 50.3, basePR: 7.8 },
-  Breach:     { role: 'Initiator',   baseWR: 49.2, basePR: 4.5 },
+  Jett: { role: 'Duelist', baseWR: 51.2, basePR: 17.5 },
+  Reyna: { role: 'Duelist', baseWR: 50.4, basePR: 16.2 },
+  Raze: { role: 'Duelist', baseWR: 49.3, basePR: 13.1 },
+  Phoenix: { role: 'Duelist', baseWR: 48.8, basePR: 5.8 },
+  Iso: { role: 'Duelist', baseWR: 50.6, basePR: 8.2 },
+  Neon: { role: 'Duelist', baseWR: 49.5, basePR: 6.5 },
+  Yoru: { role: 'Duelist', baseWR: 48.2, basePR: 4.8 },
+  Omen: { role: 'Controller', baseWR: 51.5, basePR: 15.0 },
+  Brimstone: { role: 'Controller', baseWR: 50.2, basePR: 10.8 },
+  Astra: { role: 'Controller', baseWR: 49.0, basePR: 7.5 },
+  Harbor: { role: 'Controller', baseWR: 48.5, basePR: 3.2 },
+  Clove: { role: 'Controller', baseWR: 50.8, basePR: 8.9 },
+  Viper: { role: 'Controller', baseWR: 50.1, basePR: 7.2 },
+  Killjoy: { role: 'Sentinel', baseWR: 51.3, basePR: 13.8 },
+  Cypher: { role: 'Sentinel', baseWR: 50.1, basePR: 9.5 },
+  Chamber: { role: 'Sentinel', baseWR: 49.0, basePR: 8.2 },
+  Deadlock: { role: 'Sentinel', baseWR: 47.8, basePR: 2.5 },
+  Sage: { role: 'Sentinel', baseWR: 50.5, basePR: 11.0 },
+  Vyse: { role: 'Sentinel', baseWR: 51.0, basePR: 10.5 },
+  Sova: { role: 'Initiator', baseWR: 50.9, basePR: 12.5 },
+  Fade: { role: 'Initiator', baseWR: 50.0, basePR: 10.2 },
+  Gekko: { role: 'Initiator', baseWR: 48.5, basePR: 5.8 },
+  Kayo: { role: 'Initiator', baseWR: 47.5, basePR: 5.0 },
+  Skye: { role: 'Initiator', baseWR: 50.3, basePR: 7.8 },
+  Breach: { role: 'Initiator', baseWR: 49.2, basePR: 4.5 },
 }
 
 function seededRandom(seed: number) {
@@ -75,10 +75,18 @@ async function fetchValorantStats(): Promise<StatsResponse> {
     const banrate = +(seededRandom(seed + 100) * 8).toFixed(1)
 
     const score = winrate + pickrate * 0.1
-    const tier = score >= 55 ? 'S' as const : score >= 52.5 ? 'A' as const : score >= 50 ? 'B' as const : 'C' as const
+    const tier =
+      score >= 55
+        ? ('S' as const)
+        : score >= 52.5
+          ? ('A' as const)
+          : score >= 50
+            ? ('B' as const)
+            : ('C' as const)
 
     const tSeed = seededRandom(seed + 200 + dayFactor)
-    const trend = tSeed > 0.65 ? 'up' as const : tSeed < 0.35 ? 'down' as const : 'stable' as const
+    const trend =
+      tSeed > 0.65 ? ('up' as const) : tSeed < 0.35 ? ('down' as const) : ('stable' as const)
     const trendChange = +(seededRandom(seed + 300) * 1.8).toFixed(1)
 
     return {
@@ -94,10 +102,12 @@ async function fetchValorantStats(): Promise<StatsResponse> {
     } satisfies GameEntity
   })
 
-  const bestWR = agents.reduce((a, b) => a.winrate > b.winrate ? a : b)
-  const mostPicked = agents.reduce((a, b) => a.pickrate > b.pickrate ? a : b)
+  const bestWR = agents.reduce((a, b) => (a.winrate > b.winrate ? a : b))
+  const mostPicked = agents.reduce((a, b) => (a.pickrate > b.pickrate ? a : b))
   const avgWR = (agents.reduce((a, b) => a + b.winrate, 0) / agents.length).toFixed(1)
-  const rising = agents.filter(e => e.trend === 'up').sort((a, b) => b.trendChange - a.trendChange)
+  const rising = agents
+    .filter((e) => e.trend === 'up')
+    .sort((a, b) => b.trendChange - a.trendChange)
 
   const response: StatsResponse = {
     entities: agents,
@@ -109,17 +119,40 @@ async function fetchValorantStats(): Promise<StatsResponse> {
         title: 'Agent Stats',
         items: [
           { label: 'Highest Win Rate', value: `${bestWR.winrate}%`, sublabel: bestWR.name },
-          { label: 'Most Banned', value: `${agents.reduce((a, b) => (a.banrate || 0) > (b.banrate || 0) ? a : b).banrate}%`, sublabel: agents.reduce((a, b) => (a.banrate || 0) > (b.banrate || 0) ? a : b).name },
+          {
+            label: 'Most Banned',
+            value: `${agents.reduce((a, b) => ((a.banrate || 0) > (b.banrate || 0) ? a : b)).banrate}%`,
+            sublabel: agents.reduce((a, b) => ((a.banrate || 0) > (b.banrate || 0) ? a : b)).name,
+          },
           { label: 'Avg Win Rate', value: `${avgWR}%`, sublabel: `${agents.length} agents` },
-          { label: 'Duelist Dominance', value: `${agents.filter(a => a.role === 'Duelist').reduce((s, a) => s + a.pickrate, 0).toFixed(1)}%`, sublabel: 'Combined pick rate' },
+          {
+            label: 'Duelist Dominance',
+            value: `${agents
+              .filter((a) => a.role === 'Duelist')
+              .reduce((s, a) => s + a.pickrate, 0)
+              .toFixed(1)}%`,
+            sublabel: 'Combined pick rate',
+          },
         ],
       },
       {
         title: 'Map Meta',
         items: [
-          { label: 'Ascent', value: `${(49 + seededRandom(dayFactor * 3) * 4).toFixed(1)}%`, sublabel: 'Attackers favored' },
-          { label: 'Haven', value: `${(48.5 + seededRandom(dayFactor * 3 + 1) * 3).toFixed(1)}%`, sublabel: 'Balanced' },
-          { label: 'Lotus', value: `${(49 + seededRandom(dayFactor * 3 + 2) * 3.5).toFixed(1)}%`, sublabel: 'Defense edge' },
+          {
+            label: 'Ascent',
+            value: `${(49 + seededRandom(dayFactor * 3) * 4).toFixed(1)}%`,
+            sublabel: 'Attackers favored',
+          },
+          {
+            label: 'Haven',
+            value: `${(48.5 + seededRandom(dayFactor * 3 + 1) * 3).toFixed(1)}%`,
+            sublabel: 'Balanced',
+          },
+          {
+            label: 'Lotus',
+            value: `${(49 + seededRandom(dayFactor * 3 + 2) * 3.5).toFixed(1)}%`,
+            sublabel: 'Defense edge',
+          },
         ],
       },
     ],
@@ -136,7 +169,7 @@ export async function GET() {
   } catch {
     return NextResponse.json(
       { error: 'Failed to fetch Valorant stats', entities: [], lastUpdated: 0 },
-      { status: 502 }
+      { status: 502 },
     )
   }
 }
