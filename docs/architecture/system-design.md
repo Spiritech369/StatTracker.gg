@@ -109,17 +109,18 @@ pnpm check:fix                  # Biome auto-fix
 - ✅ `@trackerstat/sdk` con cliente Data Dragon tipado (`getVersions`, `getChampions`, `getLoLRole`)
 - ✅ Seed de `ChampionStat` para LoL (`pnpm db:seed`)
 - ✅ NextAuth v5 con Credentials + Discord + Prisma adapter; API valida JWT via cookie compartida
-- ✅ `@trackerstat/workers` con job `lol-data-dragon` (reemplaza el seed de Prisma)
+- ✅ `@trackerstat/workers` con jobs `lol-data-dragon` y `tft-data-dragon`
 - ✅ Riot API client v4/v5 en `@trackerstat/sdk` (account-v1, match-v5) con rate limiter
 - ✅ Endpoint `lol.getMatchHistory` autenticado (resuelve Riot ID → puuid → últimas N partidas)
 - ✅ `lol.getMatchHistory` persiste `MatchSnapshot` con read-through cache (diff por `matchId`)
-- ⏳ Reemplazar mocks restantes (`tft`, `valorant`, `dota2`, etc.) — post vertical slice
+- ✅ Slice TFT: `tft.getChampionStats` + worker `tft-data-dragon` (reemplaza mock `/api/stats/tft`)
+- ⏳ Reemplazar mocks restantes (`valorant`, `dota2`, `deadlock`, `2xko`, `wow`, `helldivers2`, `rematch`)
 
 ## Próximos hitos (Sprint 3 · Fase B restante)
 
 1. UI de login/registro + provider Riot RSO (ampliar auth)
-2. Scheduler (cron/Redis) que dispare `workers:lol` a diario en prod
-3. Replicar el patrón LoL → TFT (segundo vertical slice)
+2. Scheduler (cron/Redis) que dispare `workers:lol` + `workers:tft` a diario en prod
+3. Replicar el patrón a Valorant (siguiente slice con Riot API)
 
 ## Auth flow
 

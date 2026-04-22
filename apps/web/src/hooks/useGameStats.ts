@@ -60,10 +60,20 @@ export function useGameStats({
   refetchInterval = 5 * 60 * 1000,
 }: UseGameStatsOptions) {
   const isLol = gameId === 'lol'
+  const isTft = gameId === 'tft'
+  const isTrpc = isLol || isTft
 
   const lolQuery = trpc.lol.getChampionStats.useQuery(undefined, {
     enabled: enabled && isLol,
     refetchInterval: isLol ? refetchInterval : false,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 2,
+  })
+
+  const tftQuery = trpc.tft.getChampionStats.useQuery(undefined, {
+    enabled: enabled && isTft,
+    refetchInterval: isTft ? refetchInterval : false,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 2,
@@ -76,8 +86,8 @@ export function useGameStats({
       if (!res.ok) throw new Error(`Failed to fetch ${gameId} stats`)
       return res.json()
     },
-    enabled: enabled && !isLol,
-    refetchInterval: !isLol ? refetchInterval : false,
+    enabled: enabled && !isTrpc,
+    refetchInterval: !isTrpc ? refetchInterval : false,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 2,
@@ -85,20 +95,20 @@ export function useGameStats({
   })
 
   const data = useMemo<GameStatsResponse | undefined>(() => {
-    if (isLol) {
-      if (!lolQuery.data) return undefined
+    const src = isLol ? lolQuery.data : isTft ? tftQuery.data : undefined
+    if (src) {
       return {
-        entities: lolQuery.data.entities,
-        patchLabel: lolQuery.data.patchLabel,
-        lastUpdated: lolQuery.data.lastUpdated,
-        source: lolQuery.data.source,
-        metaInsights: lolQuery.data.metaInsights,
+        entities: src.entities,
+        patchLabel: src.patchLabel,
+        lastUpdated: src.lastUpdated,
+        source: src.source,
+        metaInsights: src.metaInsights,
       }
     }
     return mockQuery.data
-  }, [isLol, lolQuery.data, mockQuery.data])
+  }, [isLol, isTft, lolQuery.data, tftQuery.data, mockQuery.data])
 
-  const active = isLol ? lolQuery : mockQuery
+  const active = isLol ? lolQuery : isTft ? tftQuery : mockQuery
 
   return {
     data,

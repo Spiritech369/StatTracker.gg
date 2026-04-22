@@ -1,9 +1,11 @@
 import { prisma } from '@trackerstat/database'
 import { ingestLolDataDragon } from './jobs/ingest-lol-data-dragon.js'
+import { ingestTftDataDragon } from './jobs/ingest-tft-data-dragon.js'
 import { log } from './shared/log.js'
 
 const JOBS = {
   'lol-data-dragon': ingestLolDataDragon,
+  'tft-data-dragon': ingestTftDataDragon,
 } as const
 
 type JobName = keyof typeof JOBS

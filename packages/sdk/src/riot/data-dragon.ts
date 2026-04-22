@@ -60,3 +60,32 @@ export async function getChampions(
     revalidate,
   )
 }
+
+const TftUnitSchema = z
+  .object({
+    apiName: z.string(),
+    name: z.string(),
+    cost: z.number(),
+    traits: z.array(z.string()).default([]),
+  })
+  .passthrough()
+
+const TftChampionFileSchema = z.object({
+  version: z.string(),
+  data: z.record(z.string(), TftUnitSchema),
+})
+
+export type DDragonTftUnit = z.infer<typeof TftUnitSchema>
+export type DDragonTftChampionFile = z.infer<typeof TftChampionFileSchema>
+
+export async function getTftChampions(
+  version: string,
+  locale = 'en_US',
+  revalidate = 300,
+): Promise<DDragonTftChampionFile> {
+  return ddragonFetch(
+    `/cdn/${version}/data/${locale}/tft-champion.json`,
+    TftChampionFileSchema,
+    revalidate,
+  )
+}

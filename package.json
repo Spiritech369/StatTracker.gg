@@ -25,6 +25,7 @@
     "db:seed": "pnpm --filter @trackerstat/workers lol",
     "db:studio": "pnpm --filter @trackerstat/database studio",
     "workers:lol": "pnpm --filter @trackerstat/workers lol",
+    "workers:tft": "pnpm --filter @trackerstat/workers tft",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "prepare": "lefthook install"

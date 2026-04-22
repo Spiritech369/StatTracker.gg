@@ -10,6 +10,7 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "lol": "tsx src/index.ts lol-data-dragon",
+    "tft": "tsx src/index.ts tft-data-dragon",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

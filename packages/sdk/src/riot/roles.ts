@@ -170,3 +170,15 @@ export function getLoLRole(championId: string, tags: string[]): LoLRole {
 export function patchLabelFromVersion(version: string): string {
   return version.split('.').slice(0, 2).join('.')
 }
+
+export type TftCostTier = '1-cost' | '2-cost' | '3-cost' | '4-cost' | '5-cost'
+
+export function getTftCostTier(cost: number): TftCostTier {
+  const clamped = Math.min(5, Math.max(1, Math.round(cost)))
+  return `${clamped}-cost` as TftCostTier
+}
+
+export function getTftSetLabel(apiName: string): string {
+  const match = apiName.match(/^TFT(\d+)(?:_|b_)/i)
+  return match ? `Set ${match[1]}` : 'TFT'
+}
