@@ -22,8 +22,9 @@
     "db:generate": "pnpm --filter @trackerstat/database generate",
     "db:push": "pnpm --filter @trackerstat/database push",
     "db:migrate": "pnpm --filter @trackerstat/database migrate",
-    "db:seed": "pnpm --filter @trackerstat/database seed",
+    "db:seed": "pnpm --filter @trackerstat/workers lol",
     "db:studio": "pnpm --filter @trackerstat/database studio",
+    "workers:lol": "pnpm --filter @trackerstat/workers lol",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "prepare": "lefthook install"

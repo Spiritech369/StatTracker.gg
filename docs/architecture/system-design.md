@@ -109,7 +109,7 @@ pnpm check:fix                  # Biome auto-fix
 - ✅ `@trackerstat/sdk` con cliente Data Dragon tipado (`getVersions`, `getChampions`, `getLoLRole`)
 - ✅ Seed de `ChampionStat` para LoL (`pnpm db:seed`)
 - ✅ NextAuth v5 con Credentials + Discord + Prisma adapter; API valida JWT via cookie compartida
-- ⏳ Worker de ingesta daily (Data Dragon → ChampionStat) — Sprint 3 Fase B
+- ✅ `@trackerstat/workers` con job `lol-data-dragon` (reemplaza el seed de Prisma)
 - ⏳ Riot API v4/v5 client (match-v5, rate limiter) — Sprint 3 Fase B
 - ⏳ Reemplazar mocks restantes (`tft`, `valorant`, `dota2`, etc.) — post vertical slice
 
@@ -117,7 +117,7 @@ pnpm check:fix                  # Biome auto-fix
 
 1. UI de login/registro + provider Riot RSO (ampliar auth)
 2. Extender `@trackerstat/sdk` con Riot API v4/v5 (match-v5, rate-limited)
-3. Worker en `apps/workers` que ingiere Data Dragon a diario → `ChampionStat`
+3. Scheduler (cron/Redis) que dispare `workers:lol` a diario en prod
 4. Endpoint `lol.getMatchHistory(puuid)` protegido por auth
 5. Replicar el patrón LoL → TFT (segundo vertical slice)
 
