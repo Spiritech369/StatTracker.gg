@@ -1,0 +1,103 @@
+// StatTracker database schema
+// Postgres 16 + Prisma 6
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Identity ────────────────────────────
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  displayName  String?
+  avatarUrl    String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  riotAccounts RiotAccount[]
+
+  @@map("users")
+}
+
+// ─── Riot platform linkage ───────────────
+
+model RiotAccount {
+  id           String   @id @default(cuid())
+  userId       String
+  puuid        String   @unique
+  gameName     String
+  tagLine      String
+  region       String
+  linkedAt     DateTime @default(now())
+  lastSyncedAt DateTime?
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matches      MatchSnapshot[]
+
+  @@index([userId])
+  @@index([gameName, tagLine])
+  @@map("riot_accounts")
+}
+
+// ─── Per-match snapshots (LoL first) ─────
+
+model MatchSnapshot {
+  id            String      @id @default(cuid())
+  riotAccountId String
+  matchId       String
+  game          Game
+  queue         String?
+  championId    Int?
+  win           Boolean
+  kills         Int
+  deaths        Int
+  assists       Int
+  durationSec   Int
+  playedAt      DateTime
+  raw           Json?
+  createdAt     DateTime    @default(now())
+
+  riotAccount   RiotAccount @relation(fields: [riotAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([riotAccountId, matchId])
+  @@index([game, playedAt])
+  @@map("match_snapshots")
+}
+
+// ─── Per-patch aggregated champion stats ─
+
+model ChampionStat {
+  id           String   @id @default(cuid())
+  game         Game
+  patch        String
+  championKey  String
+  role         String?
+  winrate      Float
+  pickrate     Float
+  banrate      Float?
+  tier         String?
+  sampleSize   Int      @default(0)
+  computedAt   DateTime @default(now())
+
+  @@unique([game, patch, championKey, role])
+  @@index([game, patch])
+  @@map("champion_stats")
+}
+
+enum Game {
+  LOL
+  TFT
+  VALORANT
+  DOTA2
+  DEADLOCK
+  TWOXKO
+  WOW
+  HELLDIVERS2
+  REMATCH
+}

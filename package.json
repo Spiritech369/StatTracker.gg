@@ -2,21 +2,44 @@
   "name": "trackerstat",
   "private": true,
   "version": "0.1.0",
+  "packageManager": "pnpm@10.33.1",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=10.0.0"
+  },
   "scripts": {
-    "dev": "npm run dev:web",
-    "dev:web": "npm --prefix apps/web run dev",
-    "build:web": "npm --prefix apps/web run build",
-    "install:web": "npm --prefix apps/web install",
-    "typecheck": "npm run typecheck:web",
-    "typecheck:web": "npm --prefix apps/web run typecheck",
+    "dev": "pnpm --filter @trackerstat/web dev",
+    "dev:web": "pnpm --filter @trackerstat/web dev",
+    "dev:api": "pnpm --filter @trackerstat/api dev",
+    "build": "pnpm -r build",
+    "build:web": "pnpm --filter @trackerstat/web build",
+    "build:api": "pnpm --filter @trackerstat/api build",
+    "typecheck": "pnpm -r typecheck",
     "lint": "biome lint .",
     "format": "biome format --write .",
     "check": "biome check .",
     "check:fix": "biome check --write .",
+    "db:generate": "pnpm --filter @trackerstat/database generate",
+    "db:push": "pnpm --filter @trackerstat/database push",
+    "db:migrate": "pnpm --filter @trackerstat/database migrate",
+    "db:studio": "pnpm --filter @trackerstat/database studio",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
     "prepare": "lefthook install"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.5",
     "lefthook": "^2.1.6"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "lefthook",
+      "prisma",
+      "sharp"
+    ]
   }
 }

@@ -7,6 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
+  transpilePackages: ['@trackerstat/database'],
   turbopack: {
     root: __dirname,
   },
