@@ -29,7 +29,7 @@ pnpm db:push                # schema → DB
 
 # Dev
 pnpm dev                    # alias de dev:web
-pnpm dev:web                # :3000
+pnpm dev:web                # :9090
 pnpm dev:api                # :4000
 
 # Quality

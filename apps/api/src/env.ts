@@ -5,7 +5,7 @@ const schema = z.object({
   API_HOST: z.string().default('0.0.0.0'),
   API_PORT: z.coerce.number().int().default(4000),
   API_LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
-  API_CORS_ORIGIN: z.string().default('http://localhost:3000'),
+  API_CORS_ORIGIN: z.string().default('http://localhost:9090'),
   DATABASE_URL: z.string().url().optional(),
   REDIS_URL: z.string().url().optional(),
   AUTH_SECRET: z.string().optional(),

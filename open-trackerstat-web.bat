@@ -31,7 +31,7 @@ if not exist "node_modules" (
 
 REM Levanta docker + db + api + web
 echo [INFO] Arrancando entorno completo (docker + api + web)
-echo [INFO] Web:  http://localhost:3000
+echo [INFO] Web:  http://localhost:9090
 echo [INFO] API:  http://localhost:4000
 echo [INFO] Ctrl+C para salir
 call "%PNPM_CMD%" dev:all

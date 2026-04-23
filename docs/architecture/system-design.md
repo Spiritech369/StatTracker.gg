@@ -87,7 +87,7 @@ pnpm setup                      # crea .env y genera AUTH_SECRET
 pnpm docker:up                  # Postgres + Redis
 pnpm db:generate && pnpm db:push
 pnpm dev:api                    # http://localhost:4000
-pnpm dev:web                    # http://localhost:3000
+pnpm dev:web                    # http://localhost:9090
 
 # Otras
 pnpm db:studio                  # GUI de Prisma

@@ -138,7 +138,7 @@ async function main() {
   await waitForPostgres()
   await dbSync()
 
-  log('sys', 'Arrancando API (:4000) y Web (:3000)')
+  log('sys', 'Arrancando API (:4000) y Web (:9090)')
   const api = spawnPrefixed('api', 'pnpm', ['dev:api'])
   const web = spawnPrefixed('web', 'pnpm', ['dev:web'])
 
