@@ -8,8 +8,9 @@ const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
   transpilePackages: ['@trackerstat/database'],
+  outputFileTracingRoot: path.resolve(__dirname, '../..'),
   turbopack: {
-    root: __dirname,
+    root: path.resolve(__dirname, '../..'),
   },
 }
 

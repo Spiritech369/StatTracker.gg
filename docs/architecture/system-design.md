@@ -79,17 +79,13 @@ Enum `Game` centraliza los 9 juegos del README.
 ## Flujo de dev
 
 ```bash
-# 1. Arrancar servicios
+# Todo-en-uno (primera vez y uso diario):
+pnpm dev:all                    # bootstrap env + docker + db:push + api + web
+
+# Paso a paso si dev:all falla:
+pnpm setup                      # crea .env y genera AUTH_SECRET
 pnpm docker:up                  # Postgres + Redis
-
-# 2. Configurar entorno
-cp .env.example .env            # editar según corresponda
-
-# 3. Setup DB (primera vez)
-pnpm db:generate                # genera Prisma Client
-pnpm db:push                    # pushea schema (sin migrations aún)
-
-# 4. Correr apps
+pnpm db:generate && pnpm db:push
 pnpm dev:api                    # http://localhost:4000
 pnpm dev:web                    # http://localhost:3000
 
@@ -98,6 +94,8 @@ pnpm db:studio                  # GUI de Prisma
 pnpm typecheck                  # todo el workspace
 pnpm check:fix                  # Biome auto-fix
 ```
+
+En Windows: doble clic a `open-trackerstat-web.bat` ejecuta `pnpm dev:all`.
 
 ## Estado actual
 

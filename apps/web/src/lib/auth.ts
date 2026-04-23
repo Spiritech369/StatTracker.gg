@@ -11,15 +11,17 @@ const CredentialsSchema = z.object({
   password: z.string().min(8),
 })
 
+const discordId = process.env.AUTH_DISCORD_ID
+const discordSecret = process.env.AUTH_DISCORD_SECRET
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: 'jwt' },
   trustHost: true,
   providers: [
-    Discord({
-      clientId: process.env.AUTH_DISCORD_ID,
-      clientSecret: process.env.AUTH_DISCORD_SECRET,
-    }),
+    ...(discordId && discordSecret
+      ? [Discord({ clientId: discordId, clientSecret: discordSecret })]
+      : []),
     Credentials({
       credentials: {
         email: { label: 'Email', type: 'email' },

@@ -8,9 +8,11 @@
     "pnpm": ">=10.0.0"
   },
   "scripts": {
+    "setup": "node scripts/bootstrap/setup-env.mjs",
     "dev": "pnpm --filter @trackerstat/web dev",
     "dev:web": "pnpm --filter @trackerstat/web dev",
     "dev:api": "pnpm --filter @trackerstat/api dev",
+    "dev:all": "node scripts/bootstrap/dev-all.mjs",
     "build": "pnpm -r build",
     "build:web": "pnpm --filter @trackerstat/web build",
     "build:api": "pnpm --filter @trackerstat/api build",
