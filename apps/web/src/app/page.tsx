@@ -72,6 +72,12 @@ import {
   TiltCard,
   useIsDesktop,
 } from '@/components/animations'
+import {
+  ChampionCard,
+  DashboardLoadingSkeleton,
+  RoleFilterTabs,
+  WinRateBar,
+} from '@/components/dashboard-primitives'
 import { FloatingParticles } from '@/components/FloatingParticles'
 import { Footer, GameSidebar, MobileSidebar, Navbar } from '@/components/layout'
 import { ScrollProgress } from '@/components/ScrollProgress'
@@ -82,90 +88,19 @@ import { Input } from '@/components/ui/input'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { GAMES, NAV_GAMES, SIDEBAR_SECTIONS } from '@/features/games/data'
 import type { Game, GameId } from '@/features/games/types'
+import {
+  LOL_ROLES,
+  type LoLChampion,
+  type LoLRole,
+  ROLE_COLORS,
+  TIER_STYLES,
+} from '@/features/lol/constants'
 import { useAnimatedCounter, useMouseGlow } from '@/hooks/useAnimatedCounter'
 import { type GameStatsResponse, useGameStats } from '@/hooks/useGameStats'
 
 /* ────────────────────────────────────
    LOL CHAMPION DATA
    ──────────────────────────────────── */
-
-type LoLRole = 'Top' | 'Jungle' | 'Mid' | 'ADC' | 'Support'
-
-interface LoLChampion {
-  name: string
-  role: LoLRole
-  winrate: number
-  pickrate: number
-  banrate: number
-  tier: 'S' | 'A' | 'B' | 'C'
-  trend: 'up' | 'down' | 'stable'
-  trendChange: number
-  games: number
-}
-
-const LOL_ROLES: { id: LoLRole | 'All'; label: string; color: string; bgColor: string }[] = [
-  { id: 'All', label: 'Todos', color: 'text-foreground', bgColor: 'bg-white/10' },
-  {
-    id: 'Top',
-    label: 'Top',
-    color: 'text-orange-400',
-    bgColor: 'bg-orange-500/10 border-orange-500/30',
-  },
-  {
-    id: 'Jungle',
-    label: 'Jungle',
-    color: 'text-green-400',
-    bgColor: 'bg-green-500/10 border-green-500/30',
-  },
-  { id: 'Mid', label: 'Mid', color: 'text-cyan-400', bgColor: 'bg-cyan-500/10 border-cyan-500/30' },
-  { id: 'ADC', label: 'ADC', color: 'text-red-400', bgColor: 'bg-red-500/10 border-red-500/30' },
-  {
-    id: 'Support',
-    label: 'Support',
-    color: 'text-yellow-400',
-    bgColor: 'bg-yellow-500/10 border-yellow-500/30',
-  },
-]
-
-const ROLE_COLORS: Record<LoLRole, { text: string; bg: string; border: string; dot: string }> = {
-  Top: {
-    text: 'text-orange-400',
-    bg: 'bg-orange-500/10',
-    border: 'border-orange-500/30',
-    dot: 'bg-orange-400',
-  },
-  Jungle: {
-    text: 'text-green-400',
-    bg: 'bg-green-500/10',
-    border: 'border-green-500/30',
-    dot: 'bg-green-400',
-  },
-  Mid: {
-    text: 'text-cyan-400',
-    bg: 'bg-cyan-500/10',
-    border: 'border-cyan-500/30',
-    dot: 'bg-cyan-400',
-  },
-  ADC: {
-    text: 'text-red-400',
-    bg: 'bg-red-500/10',
-    border: 'border-red-500/30',
-    dot: 'bg-red-400',
-  },
-  Support: {
-    text: 'text-yellow-400',
-    bg: 'bg-yellow-500/10',
-    border: 'border-yellow-500/30',
-    dot: 'bg-yellow-400',
-  },
-}
-
-const TIER_STYLES: Record<string, { text: string; bg: string; border: string }> = {
-  S: { text: 'text-yellow-400', bg: 'bg-yellow-500/15', border: 'border-yellow-500/30' },
-  A: { text: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/30' },
-  B: { text: 'text-blue-400', bg: 'bg-blue-500/15', border: 'border-blue-500/30' },
-  C: { text: 'text-violet-400', bg: 'bg-violet-500/15', border: 'border-violet-500/30' },
-}
 
 const LOL_CHAMPIONS: LoLChampion[] = [
   // Top
@@ -2359,222 +2294,6 @@ function HomePage({ onSelectGame }: { onSelectGame: (id: GameId) => void }) {
   )
 }
 
-/* ────────────────────────────────────
-   LOL SECTION COMPONENTS (Redesigned)
-   ──────────────────────────────────── */
-
-function WinRateBar({ value, max = 55, min = 45 }: { value: number; max?: number; min?: number }) {
-  const pct = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100))
-  const color =
-    value >= 52
-      ? 'bg-emerald-500'
-      : value >= 50
-        ? 'bg-emerald-400/70'
-        : value >= 49
-          ? 'bg-amber-400/60'
-          : 'bg-rose-400/70'
-  const glow = value >= 52 ? 'shadow-emerald-500/30' : ''
-  return (
-    <div className="w-full h-1.5 rounded-full bg-white/[0.04] overflow-hidden">
-      <motion.div
-        className={`h-full rounded-full ${color} ${glow}`}
-        initial={{ width: 0, opacity: 0 }}
-        animate={{ width: `${pct}%`, opacity: 1 }}
-        transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
-      />
-    </div>
-  )
-}
-
-function ChampionCard({
-  champ,
-  compact = false,
-  index = 0,
-}: {
-  champ: LoLChampion
-  compact?: boolean
-  index?: number
-}) {
-  const rc = ROLE_COLORS[champ.role]
-  const ts = TIER_STYLES[champ.tier]
-  const wrColor =
-    champ.winrate >= 51
-      ? 'text-emerald-400'
-      : champ.winrate >= 50
-        ? 'text-foreground'
-        : 'text-rose-400'
-  const TrendIcon =
-    champ.trend === 'up' ? ChevronRight : champ.trend === 'down' ? ChevronLeft : null
-  const trendColor =
-    champ.trend === 'up'
-      ? 'text-emerald-400'
-      : champ.trend === 'down'
-        ? 'text-rose-400'
-        : 'text-muted-foreground'
-  const tierDotColor =
-    champ.tier === 'S'
-      ? 'bg-yellow-400'
-      : champ.tier === 'A'
-        ? 'bg-emerald-400'
-        : champ.tier === 'B'
-          ? 'bg-blue-400'
-          : 'bg-violet-400'
-  const isSTier = champ.tier === 'S'
-
-  if (compact) {
-    return (
-      <motion.div
-        className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-all cursor-pointer border border-transparent hover:border-white/[0.04] ${isSTier ? 'tier-s-glow' : ''}`}
-        whileHover={{ x: 4 }}
-        transition={{ duration: 0.2 }}
-      >
-        <span className="text-[11px] font-bold text-muted-foreground/50 w-5 text-right shrink-0">
-          {index + 1}
-        </span>
-        <div
-          className={`w-9 h-9 rounded-lg ${rc.bg} border ${rc.border} flex items-center justify-center text-sm font-bold ${rc.text} shrink-0 group-hover:scale-110 transition-transform duration-300`}
-        >
-          {champ.name.charAt(0)}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold truncate group-hover:text-emerald-300 transition-colors">
-              {champ.name}
-            </span>
-            <div className="flex items-center gap-1">
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${tierDotColor} ${isSTier ? 'pulse-live' : ''}`}
-              />
-              <span className={`text-[10px] font-bold ${ts.text}`}>{champ.tier}</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 mt-0.5">
-            <span className={`text-xs font-semibold ${wrColor}`}>{champ.winrate}%</span>
-            <WinRateBar value={champ.winrate} />
-          </div>
-        </div>
-        <div className="text-right shrink-0 flex items-center gap-2">
-          <span className="text-[11px] text-muted-foreground hidden sm:inline">
-            {champ.pickrate}% PR
-          </span>
-          {TrendIcon && (
-            <span className={`text-[11px] font-medium ${trendColor} flex items-center gap-0.5`}>
-              <TrendIcon className="w-3 h-3" />
-              {champ.trendChange > 0 ? '+' : ''}
-              {champ.trendChange}%
-            </span>
-          )}
-        </div>
-      </motion.div>
-    )
-  }
-
-  return (
-    <motion.div
-      className={`group flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/[0.03] transition-all cursor-pointer border border-transparent hover:border-white/[0.04] ${isSTier ? 'tier-s-glow' : ''}`}
-      whileHover={{ x: 2 }}
-      transition={{ duration: 0.15 }}
-    >
-      {/* Avatar */}
-      <div className="relative shrink-0">
-        <div
-          className={`w-8 h-8 rounded-full ${rc.bg} border ${rc.border} flex items-center justify-center text-xs font-bold ${rc.text} group-hover:scale-110 transition-transform duration-300`}
-        >
-          {champ.name.charAt(0)}
-        </div>
-        {/* Tier dot */}
-        <span
-          className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ${tierDotColor} border-2 border-[#09090b] flex items-center justify-center ${isSTier ? 'pulse-live' : ''}`}
-        >
-          <span className="text-[6px] font-black text-black leading-none">{champ.tier}</span>
-        </span>
-      </div>
-      {/* Name + role */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs font-semibold truncate group-hover:text-emerald-300 transition-colors duration-200">
-            {champ.name}
-          </span>
-          <span
-            className={`text-[9px] px-1 py-px rounded font-medium ${rc.bg} ${rc.text} border ${rc.border} leading-none`}
-          >
-            {champ.role}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 mt-0.5">
-          <span className={`text-[11px] font-bold ${wrColor}`}>{champ.winrate}%</span>
-          <WinRateBar value={champ.winrate} />
-        </div>
-      </div>
-      {/* Pick rate + trend */}
-      <div className="text-right shrink-0 flex items-center gap-2">
-        <span className="text-[10px] text-muted-foreground hidden sm:inline">
-          {champ.pickrate}% PR
-        </span>
-        <span className="text-[10px] text-muted-foreground/60 hidden md:inline">
-          {champ.banrate}% BR
-        </span>
-        {TrendIcon && (
-          <span className={`text-[10px] font-semibold ${trendColor} flex items-center gap-0.5`}>
-            <TrendIcon className="w-2.5 h-2.5" />
-            {champ.trendChange > 0 ? '+' : ''}
-            {champ.trendChange}%
-          </span>
-        )}
-      </div>
-    </motion.div>
-  )
-}
-
-function RoleFilterTabs({
-  selected,
-  onChange,
-}: {
-  selected: LoLRole | 'All'
-  onChange: (r: LoLRole | 'All') => void
-}) {
-  const dotColors: Record<string, string> = {
-    Top: 'bg-orange-400',
-    Jungle: 'bg-green-400',
-    Mid: 'bg-cyan-400',
-    ADC: 'bg-red-400',
-    Support: 'bg-yellow-400',
-  }
-  return (
-    <div className="flex items-center gap-0.5">
-      {LOL_ROLES.map((role) => {
-        const isActive = selected === role.id
-        const isAll = role.id === 'All'
-        return (
-          <button
-            key={role.id}
-            onClick={() => onChange(role.id)}
-            className={`relative flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium whitespace-nowrap transition-all duration-150 cursor-pointer shrink-0 ${
-              isActive
-                ? 'bg-white/[0.08] text-foreground'
-                : 'text-muted-foreground/60 hover:text-foreground hover:bg-white/[0.04]'
-            }`}
-          >
-            {!isAll && (
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${dotColors[role.id]} ${isActive ? 'shadow-sm' : 'opacity-40'}`}
-              />
-            )}
-            {role.label}
-            {isActive && (
-              <motion.div
-                layoutId="lol-role-tab"
-                className="absolute bottom-0 left-1 right-1 h-0.5 bg-emerald-500 rounded-full"
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              />
-            )}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
 function LoLHomeSection() {
   const [roleFilter, setRoleFilter] = useState<LoLRole | 'All'>('All')
   const [search, setSearch] = useState('')
@@ -4241,44 +3960,6 @@ function ComingSoonSection({ game, onBack }: { game: Game; onBack: () => void })
         </div>
       </FadeIn>
     </>
-  )
-}
-
-function DashboardLoadingSkeleton() {
-  return (
-    <div className="space-y-4 animate-pulse">
-      {/* Hero banner skeleton */}
-      <div className="h-24 rounded-xl bg-white/[0.03] border border-white/[0.04]" />
-      {/* Stats strip */}
-      <div className="grid grid-cols-4 gap-2">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-14 rounded-lg bg-white/[0.03] border border-white/[0.04]" />
-        ))}
-      </div>
-      {/* Role strip */}
-      <div className="h-12 rounded-lg bg-white/[0.03] border border-white/[0.04]" />
-      {/* Entity list */}
-      <div className="rounded-xl border border-white/[0.04] bg-white/[0.01] divide-y divide-white/[0.02]">
-        {[...Array(8)].map((_, i) => (
-          <div key={i} className="flex items-center gap-3 px-4 py-3">
-            <div className="w-8 h-8 rounded-full bg-white/[0.04]" />
-            <div className="flex-1 space-y-1.5">
-              <div className="h-3 w-24 rounded bg-white/[0.04]" />
-              <div className="h-2 w-16 rounded bg-white/[0.03]" />
-            </div>
-            <div className="h-3 w-10 rounded bg-white/[0.04]" />
-          </div>
-        ))}
-      </div>
-      {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        <div className="lg:col-span-2 h-64 rounded-xl bg-white/[0.03] border border-white/[0.04]" />
-        <div className="space-y-3">
-          <div className="h-32 rounded-xl bg-white/[0.03] border border-white/[0.04]" />
-          <div className="h-32 rounded-xl bg-white/[0.03] border border-white/[0.04]" />
-        </div>
-      </div>
-    </div>
   )
 }
 
