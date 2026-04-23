@@ -1,6 +1,6 @@
 'use client'
 
-import { AnimatePresence, motion, useInView, type Variants } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
   Activity,
   ArrowRight,
@@ -8,11 +8,8 @@ import {
   BarChart3,
   Brain,
   Check,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
   Compass,
   Crosshair,
   Crown,
@@ -23,15 +20,8 @@ import {
   Home as HomeIcon,
   Keyboard,
   Layers,
-  LayoutDashboard,
-  Loader2,
-  Menu,
-  RefreshCw,
-  Rocket,
-  RotateCcw,
   Search,
   Shield,
-  Skull,
   Sparkles,
   Star,
   Swords,
@@ -40,13 +30,10 @@ import {
   TrendingUp,
   Trophy,
   Users,
-  Wifi,
-  WifiOff,
   Wrench,
-  X,
   Zap,
 } from 'lucide-react'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Area,
   AreaChart,
@@ -61,7 +48,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { Toaster, toast } from 'sonner'
+import { Toaster } from 'sonner'
 import {
   AnimatedStat,
   FadeIn,
@@ -85,8 +72,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { GAMES, NAV_GAMES, SIDEBAR_SECTIONS } from '@/features/games/data'
+import { GAMES } from '@/features/games/data'
 import type { Game, GameId } from '@/features/games/types'
 import {
   LOL_ROLES,
@@ -95,7 +81,6 @@ import {
   ROLE_COLORS,
   TIER_STYLES,
 } from '@/features/lol/constants'
-import { useAnimatedCounter, useMouseGlow } from '@/hooks/useAnimatedCounter'
 import { type GameStatsResponse, useGameStats } from '@/hooks/useGameStats'
 
 /* ────────────────────────────────────
@@ -3064,7 +3049,7 @@ function LoLProBuildsSection() {
                       <div className="text-[10px] text-muted-foreground">Win Rate</div>
                     </div>
                     <div className="hidden lg:flex items-center gap-1">
-                      {pb.items.slice(0, 3).map((item, i) => (
+                      {pb.items.slice(0, 3).map((_item, i) => (
                         <div
                           key={i}
                           className="w-8 h-8 rounded bg-white/[0.04] border border-white/[0.06] flex items-center justify-center -ml-1 first:ml-0"
@@ -4002,7 +3987,7 @@ function DashboardCharts({
         })
         .slice(0, 8)
         .map((e) => ({
-          name: e.name.length > 10 ? e.name.slice(0, 9) + '…' : e.name,
+          name: e.name.length > 10 ? `${e.name.slice(0, 9)}…` : e.name,
           fullName: e.name,
           value: showPlacement ? e.placementRate || e.winrate : e.winrate,
           tier: e.tier,
@@ -4600,7 +4585,7 @@ function GameDashboardHome({
           </div>
         </div>
         <StaggerContainer className="rounded-xl border border-white/[0.06] bg-white/[0.01] overflow-hidden divide-y divide-white/[0.03]">
-          {filtered.map((entity, i) => {
+          {filtered.map((entity, _i) => {
             const rc = roleColors[entity.role] || {
               text: 'text-muted-foreground',
               bg: 'bg-white/10',
@@ -4871,37 +4856,36 @@ function GameDashboardHome({
             </div>
 
             {/* Meta Insights */}
-            {metaInsights &&
-              metaInsights.map((insight, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-lg border border-white/[0.06] bg-white/[0.01] overflow-hidden"
-                >
-                  <div className="px-3 py-2 border-b border-white/[0.04] bg-white/[0.02]">
-                    <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      {insight.title}
-                    </h3>
-                  </div>
-                  <div className="p-2 space-y-0.5">
-                    {insight.items.map((item, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-white/[0.03] transition-colors cursor-pointer"
-                      >
-                        <div className="min-w-0">
-                          <div className="text-[10px] font-medium truncate">{item.label}</div>
-                          {item.sublabel && (
-                            <div className="text-[9px] text-muted-foreground">{item.sublabel}</div>
-                          )}
-                        </div>
-                        <span className={`text-[10px] font-bold shrink-0 ml-2 ${accent.text}`}>
-                          {item.value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+            {metaInsights?.map((insight, idx) => (
+              <div
+                key={idx}
+                className="rounded-lg border border-white/[0.06] bg-white/[0.01] overflow-hidden"
+              >
+                <div className="px-3 py-2 border-b border-white/[0.04] bg-white/[0.02]">
+                  <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {insight.title}
+                  </h3>
                 </div>
-              ))}
+                <div className="p-2 space-y-0.5">
+                  {insight.items.map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-white/[0.03] transition-colors cursor-pointer"
+                    >
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-medium truncate">{item.label}</div>
+                        {item.sublabel && (
+                          <div className="text-[9px] text-muted-foreground">{item.sublabel}</div>
+                        )}
+                      </div>
+                      <span className={`text-[10px] font-bold shrink-0 ml-2 ${accent.text}`}>
+                        {item.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
 
             {/* Role averages */}
             <div className="rounded-lg border border-white/[0.06] bg-white/[0.01] overflow-hidden">
