@@ -19,14 +19,12 @@ import {
   Globe,
   Home as HomeIcon,
   Keyboard,
-  Layers,
   Search,
   Shield,
   Sparkles,
   Star,
   Swords,
   Target,
-  Timer,
   TrendingUp,
   Trophy,
   Users,
@@ -34,20 +32,6 @@ import {
   Zap,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from 'recharts'
 import { Toaster } from 'sonner'
 import {
   AnimatedStat,
@@ -59,6 +43,7 @@ import {
   TiltCard,
   useIsDesktop,
 } from '@/components/animations'
+import { DashboardCharts } from '@/components/dashboard-charts'
 import {
   ChampionCard,
   DashboardLoadingSkeleton,
@@ -72,6 +57,12 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import {
+  ACCENT_MAP,
+  type GameEntity,
+  type GameHomeConfig,
+  type GameRoleDef,
+} from '@/features/games/dashboard-types'
 import { GAMES } from '@/features/games/data'
 import type { Game, GameId } from '@/features/games/types'
 import {
@@ -477,105 +468,6 @@ const LOL_ITEMS = [
   { name: 'Thornmail', gold: 2700 },
   { name: 'Plated Steelcaps', gold: 1100 },
 ]
-
-/* ────────────────────────────────────
-   ACCENT COLOR MAP (for game theming)
-   ──────────────────────────────────── */
-
-const ACCENT_MAP: Record<
-  string,
-  {
-    primary: string
-    hover: string
-    bg: string
-    text: string
-    border: string
-    gradient: string
-    button: string
-    buttonHover: string
-  }
-> = {
-  red: {
-    primary: 'bg-red-500',
-    hover: 'hover:bg-red-400',
-    bg: 'bg-red-500/10',
-    text: 'text-red-400',
-    border: 'border-red-500/30',
-    gradient: 'from-red-500/20 to-red-600/5',
-    button: 'bg-red-500',
-    buttonHover: 'hover:bg-red-400',
-  },
-  amber: {
-    primary: 'bg-amber-500',
-    hover: 'hover:bg-amber-400',
-    bg: 'bg-amber-500/10',
-    text: 'text-amber-400',
-    border: 'border-amber-500/30',
-    gradient: 'from-amber-500/20 to-amber-600/5',
-    button: 'bg-amber-500',
-    buttonHover: 'hover:bg-amber-400',
-  },
-  violet: {
-    primary: 'bg-violet-500',
-    hover: 'hover:bg-violet-400',
-    bg: 'bg-violet-500/10',
-    text: 'text-violet-400',
-    border: 'border-violet-500/30',
-    gradient: 'from-violet-500/20 to-violet-600/5',
-    button: 'bg-violet-500',
-    buttonHover: 'hover:bg-violet-400',
-  },
-  rose: {
-    primary: 'bg-rose-500',
-    hover: 'hover:bg-rose-400',
-    bg: 'bg-rose-500/10',
-    text: 'text-rose-400',
-    border: 'border-rose-500/30',
-    gradient: 'from-rose-500/20 to-rose-600/5',
-    button: 'bg-rose-500',
-    buttonHover: 'hover:bg-rose-400',
-  },
-  emerald: {
-    primary: 'bg-emerald-500',
-    hover: 'hover:bg-emerald-400',
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-400',
-    border: 'border-emerald-500/30',
-    gradient: 'from-emerald-500/20 to-emerald-600/5',
-    button: 'bg-emerald-500',
-    buttonHover: 'hover:bg-emerald-400',
-  },
-  purple: {
-    primary: 'bg-purple-500',
-    hover: 'hover:bg-purple-400',
-    bg: 'bg-purple-500/10',
-    text: 'text-purple-400',
-    border: 'border-purple-500/30',
-    gradient: 'from-purple-500/20 to-purple-600/5',
-    button: 'bg-purple-500',
-    buttonHover: 'hover:bg-purple-400',
-  },
-  orange: {
-    primary: 'bg-orange-500',
-    hover: 'hover:bg-orange-400',
-    bg: 'bg-orange-500/10',
-    text: 'text-orange-400',
-    border: 'border-orange-500/30',
-    gradient: 'from-orange-500/20 to-orange-600/5',
-    button: 'bg-orange-500',
-    buttonHover: 'hover:bg-orange-400',
-  },
-  green: {
-    primary: 'bg-green-500',
-    hover: 'hover:bg-green-400',
-    bg: 'bg-green-500/10',
-    text: 'text-green-400',
-    border: 'border-green-500/30',
-    gradient: 'from-green-500/20 to-green-600/5',
-    button: 'bg-green-500',
-    buttonHover: 'hover:bg-green-400',
-  },
-}
 
 /* ────────────────────────────────────
    VALORANT AGENT DATA
@@ -3305,50 +3197,6 @@ function LoLLiveGameSection() {
 }
 
 /* ────────────────────────────────────
-   GAME DASHBOARD HOME (REUSABLE)
-   ──────────────────────────────────── */
-
-interface GameEntity {
-  name: string
-  role: string
-  winrate: number
-  pickrate: number
-  banrate?: number
-  tier: 'S' | 'A' | 'B' | 'C'
-  trend: 'up' | 'down' | 'stable'
-  trendChange: number
-  kda?: number
-  placementRate?: number
-  difficulty?: string
-  carryUnits?: string[]
-}
-
-interface GameRoleDef {
-  id: string
-  label: string
-  color: string
-  bgColor: string
-  dotColor: string
-  borderColor?: string
-}
-
-interface GameHomeConfig {
-  game: Game
-  entities: GameEntity[]
-  roles: GameRoleDef[]
-  roleColors: Record<string, { text: string; bg: string; border: string; dot: string }>
-  patchLabel: string
-  searchPlaceholder: string
-  entityLabel: string
-  entityIcon: string
-  secondaryStatLabel?: string
-  showKda?: boolean
-  showPlacement?: boolean
-  showBanRate?: boolean
-  metaInsights?: { title: string; items: { label: string; value: string; sublabel?: string }[] }[]
-}
-
-/* ────────────────────────────────────
    COMING SOON CONFIG & COMPONENT
    ──────────────────────────────────── */
 
@@ -3945,354 +3793,6 @@ function ComingSoonSection({ game, onBack }: { game: Game; onBack: () => void })
         </div>
       </FadeIn>
     </>
-  )
-}
-
-/* ────────────────────────────────────
-   DASHBOARD CHARTS (Recharts)
-   ──────────────────────────────────── */
-
-const CHART_COLORS = [
-  '#facc15',
-  '#34d399',
-  '#60a5fa',
-  '#a78bfa',
-  '#f87171',
-  '#fb923c',
-  '#2dd4bf',
-  '#f472b6',
-]
-
-function DashboardCharts({
-  entities,
-  entityLabel,
-  accent,
-  roleColors,
-  showPlacement,
-}: {
-  entities: GameEntity[]
-  entityLabel: string
-  accent: typeof ACCENT_MAP.emerald
-  roleColors: Record<string, { text: string; bg: string; border: string; dot: string }>
-  showPlacement?: boolean
-}) {
-  // Top 8 entities by win rate for bar chart
-  const topEntities = useMemo(
-    () =>
-      [...entities]
-        .sort((a, b) => {
-          const va = showPlacement ? a.placementRate || a.winrate : a.winrate
-          const vb = showPlacement ? b.placementRate || b.winrate : b.winrate
-          return vb - va
-        })
-        .slice(0, 8)
-        .map((e) => ({
-          name: e.name.length > 10 ? `${e.name.slice(0, 9)}…` : e.name,
-          fullName: e.name,
-          value: showPlacement ? e.placementRate || e.winrate : e.winrate,
-          tier: e.tier,
-          role: e.role,
-        })),
-    [entities, showPlacement],
-  )
-
-  // Tier distribution for pie chart
-  const tierDist = useMemo(() => {
-    const counts: Record<string, number> = { S: 0, A: 0, B: 0, C: 0 }
-    entities.forEach((e) => {
-      if (counts[e.tier] !== undefined) counts[e.tier]++
-    })
-    return Object.entries(counts).map(([tier, count]) => ({
-      name: `${tier}-Tier`,
-      value: count,
-      tier,
-    }))
-  }, [entities])
-
-  // Role distribution for pie chart
-  const roleOnlyDefs = Object.keys(roleColors).filter((k) => k !== 'All' && roleColors[k])
-  const roleDist = useMemo(
-    () =>
-      roleOnlyDefs
-        .map((role) => ({
-          name: role,
-          value: entities.filter((e) => e.role === role).length,
-          color: roleColors[role]?.dot || '#888',
-        }))
-        .filter((d) => d.value > 0),
-    [entities, roleOnlyDefs, roleColors],
-  )
-
-  // Simulated trend data for area chart
-  const trendData = useMemo(() => {
-    const labels = [
-      '7d ago',
-      '6d ago',
-      '5d ago',
-      '4d ago',
-      '3d ago',
-      '2d ago',
-      'Yesterday',
-      'Today',
-    ]
-    return labels.map((label, i) => ({
-      label,
-      winRate: +(49.5 + Math.sin(i * 0.8) * 1.2 + (i / labels.length) * 1.5).toFixed(1),
-      pickRate: +(10 + Math.cos(i * 0.6) * 2 + (i / labels.length) * 1).toFixed(1),
-    }))
-  }, [])
-
-  const tierColorMap: Record<string, string> = {
-    S: '#facc15',
-    A: '#34d399',
-    B: '#60a5fa',
-    C: '#a78bfa',
-  }
-
-  return (
-    <FadeIn delay={0.12} className="mt-6">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xs font-bold flex items-center gap-1.5">
-          <Activity className="w-3.5 h-3.5 text-cyan-400" />
-          Analytics Overview
-        </h2>
-        <Badge variant="outline" className="text-[9px] gap-1">
-          <Layers className="w-2.5 h-2.5" />
-          Live data
-        </Badge>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {/* Win Rate Bar Chart */}
-        <div className="lg:col-span-2 rounded-xl border border-white/[0.06] bg-white/[0.01] overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-white/[0.04] bg-white/[0.02]">
-            <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Top {entityLabel.charAt(0).toUpperCase() + entityLabel.slice(1)} —{' '}
-              {showPlacement ? 'Top 4 Rate' : 'Win Rate'} %
-            </h3>
-          </div>
-          <div className="p-3">
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart
-                data={topEntities}
-                layout="vertical"
-                margin={{ top: 0, right: 30, left: 0, bottom: 0 }}
-              >
-                <XAxis
-                  type="number"
-                  domain={showPlacement ? [15, 35] : [47, 55]}
-                  tick={{ fontSize: 10, fill: '#71717a' }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  tick={{ fontSize: 10, fill: '#a1a1aa' }}
-                  width={65}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <RechartsTooltip
-                  contentStyle={{
-                    backgroundColor: '#18181b',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: '8px',
-                    fontSize: '11px',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                  }}
-                  labelStyle={{ color: '#e4e4e7', fontWeight: 600 }}
-                  formatter={(value: number, name: string) => [
-                    `${value}%`,
-                    name === 'value' ? (showPlacement ? 'Top 4 Rate' : 'Win Rate') : name,
-                  ]}
-                  labelFormatter={(label: string) => {
-                    const found = topEntities.find((t) => t.name === label)
-                    return found?.fullName || label
-                  }}
-                />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={18}>
-                  {topEntities.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={tierColorMap[entry.tier] || accent.primary.replace('bg-', '#')}
-                      fillOpacity={0.8}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Tier Distribution Pie + Role Split */}
-        <div className="space-y-3">
-          {/* Tier Distribution */}
-          <div className="rounded-xl border border-white/[0.06] bg-white/[0.01] overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-white/[0.04] bg-white/[0.02]">
-              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Tier Distribution
-              </h3>
-            </div>
-            <div className="p-3 flex items-center gap-3">
-              <ResponsiveContainer width={90} height={90}>
-                <PieChart>
-                  <Pie
-                    data={tierDist}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={25}
-                    outerRadius={42}
-                    paddingAngle={3}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {tierDist.map((entry, index) => (
-                      <Cell key={`tier-${index}`} fill={tierColorMap[entry.tier] || '#888'} />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip
-                    contentStyle={{
-                      backgroundColor: '#18181b',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      borderRadius: '8px',
-                      fontSize: '11px',
-                    }}
-                    formatter={(value: number) => [`${value} ${entityLabel}`, 'Count']}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="space-y-1.5">
-                {tierDist.map((t) => (
-                  <div key={t.tier} className="flex items-center gap-2">
-                    <span
-                      className="w-2 h-2 rounded-sm shrink-0"
-                      style={{ backgroundColor: tierColorMap[t.tier] }}
-                    />
-                    <span className="text-[10px] text-muted-foreground flex-1">{t.name}</span>
-                    <span className="text-[10px] font-bold" style={{ color: tierColorMap[t.tier] }}>
-                      {t.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Role Composition */}
-          <div className="rounded-xl border border-white/[0.06] bg-white/[0.01] overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-white/[0.04] bg-white/[0.02]">
-              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Role Composition
-              </h3>
-            </div>
-            <div className="p-3">
-              <div className="space-y-1.5">
-                {roleDist.slice(0, 5).map((r) => {
-                  const pct = (r.value / entities.length) * 100
-                  return (
-                    <div key={r.name}>
-                      <div className="flex items-center justify-between mb-0.5">
-                        <span className="text-[10px] text-muted-foreground">{r.name}</span>
-                        <span className="text-[10px] font-bold">
-                          {r.value} ({pct.toFixed(0)}%)
-                        </span>
-                      </div>
-                      <div className="w-full h-1 rounded-full bg-white/[0.06] overflow-hidden">
-                        <motion.div
-                          className="h-full rounded-full"
-                          style={{ backgroundColor: r.color }}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${pct}%` }}
-                          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Trend Area Chart (full width) */}
-        <div className="md:col-span-2 lg:col-span-3 rounded-xl border border-white/[0.06] bg-white/[0.01] overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-white/[0.04] bg-white/[0.02]">
-            <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Timer className="w-3 h-3" />
-              Meta Trend — Last 7 Days
-            </h3>
-          </div>
-          <div className="p-3">
-            <ResponsiveContainer width="100%" height={140}>
-              <AreaChart data={trendData} margin={{ top: 5, right: 20, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="wrGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor={accent.text.includes('emerald') ? '#34d399' : '#f87171'}
-                      stopOpacity={0.15}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor={accent.text.includes('emerald') ? '#34d399' : '#f87171'}
-                      stopOpacity={0}
-                    />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                <XAxis
-                  dataKey="label"
-                  tick={{ fontSize: 9, fill: '#71717a' }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  domain={['dataMin - 0.5', 'dataMax + 0.5']}
-                  tick={{ fontSize: 9, fill: '#71717a' }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={32}
-                />
-                <RechartsTooltip
-                  contentStyle={{
-                    backgroundColor: '#18181b',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: '8px',
-                    fontSize: '11px',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                  }}
-                  formatter={(value: number, name: string) => [
-                    `${value}%`,
-                    name === 'winRate' ? 'Avg Win Rate' : 'Avg Pick Rate',
-                  ]}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="winRate"
-                  stroke={accent.text.includes('emerald') ? '#34d399' : '#f87171'}
-                  strokeWidth={2}
-                  fill="url(#wrGrad)"
-                  dot={{
-                    r: 3,
-                    fill: accent.text.includes('emerald') ? '#34d399' : '#f87171',
-                    strokeWidth: 0,
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="pickRate"
-                  stroke="#60a5fa"
-                  strokeWidth={1.5}
-                  fill="none"
-                  strokeDasharray="4 4"
-                  dot={false}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-    </FadeIn>
   )
 }
 
